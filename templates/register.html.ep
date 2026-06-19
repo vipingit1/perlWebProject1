@@ -1,0 +1,38 @@
+% layout 'default';
+% title 'Register';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Register</h1>
+    
+    % if (my $error = param('error')) {
+        <div class="alert alert-error"><%= $error %></div>
+    % }
+    
+    <form method="POST" action="/register">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Register</button>
+        </div>
+        
+        <p>Already have an account? <a href="/login">Login here</a></p>
+    </form>
+</div>

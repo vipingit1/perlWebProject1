@@ -1,0 +1,44 @@
+# Database
+*.db
+*.db-journal
+
+# Perl
+*.o
+*.so
+*.a
+*.pm.bak
+Cover.db
+blib/
+PM_to_blib
+_eumm/
+*.xs.bak
+*.c
+*.dat
+Makefile.old
+MANIFEST.bak
+distro/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db

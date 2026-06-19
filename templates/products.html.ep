@@ -1,0 +1,24 @@
+% layout 'default';
+% title 'Products';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Our Products</h1>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; margin-top: 40px;">
+        % if (@$products) {
+            % foreach my $product (@$products) {
+                <div class="product-card" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h3><%= $product->{name} %></h3>
+                    <p style="color: #999;"><%= $product->{category} %></p>
+                    <p><%= substr($product->{description} // '', 0, 100) %>...</p>
+                    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 1.3em; font-weight: bold; color: #667eea;">$<%= sprintf('%.2f', $product->{price}) %></span>
+                        <a href="/product/<%= $product->{id} %>" class="btn btn-info">View Details</a>
+                    </div>
+                </div>
+            % }
+        % } else {
+            <p>No products available.</p>
+        % }
+    </div>
+</div>

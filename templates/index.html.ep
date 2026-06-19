@@ -1,0 +1,133 @@
+% layout 'default';
+% title 'Welcome to Perl Ecommerce';
+
+<div class="hero-section">
+    <div class="container">
+        <h1>Welcome to Perl Ecommerce</h1>
+        <p>Your one-stop shop for quality products</p>
+        <a href="/products" class="btn btn-primary btn-lg">Shop Now</a>
+    </div>
+</div>
+
+<div class="featured-section">
+    <div class="container">
+        <h2>Featured Products</h2>
+        <div class="products-grid">
+            % if (@$products) {
+                % foreach my $product (@$products) {
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="<%= $product->{image_url} // '/images/placeholder.png' %>" alt="<%= $product->{name} %>">
+                        </div>
+                        <div class="product-info">
+                            <h3><%= $product->{name} %></h3>
+                            <p class="category"><%= $product->{category} %></p>
+                            <p class="description"><%= substr($product->{description} // '', 0, 100) %>...</p>
+                            <div class="product-footer">
+                                <span class="price">$<%= sprintf('%.2f', $product->{price}) %></span>
+                                <a href="/product/<%= $product->{id} %>" class="btn btn-sm btn-info">View</a>
+                            </div>
+                        </div>
+                    </div>
+                % }
+            % } else {
+                <p>No products available at the moment.</p>
+            % }
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 100px 20px;
+        text-align: center;
+    }
+
+    .hero-section h1 {
+        font-size: 3em;
+        margin: 0 0 20px 0;
+    }
+
+    .hero-section p {
+        font-size: 1.2em;
+        margin: 0 0 30px 0;
+    }
+
+    .featured-section {
+        padding: 60px 20px;
+    }
+
+    .featured-section h2 {
+        text-align: center;
+        font-size: 2em;
+        margin-bottom: 40px;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 30px;
+    }
+
+    .product-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .product-info {
+        padding: 15px;
+    }
+
+    .product-info h3 {
+        margin: 0 0 10px 0;
+        font-size: 1.1em;
+    }
+
+    .category {
+        color: #999;
+        font-size: 0.9em;
+        margin: 5px 0;
+    }
+
+    .description {
+        color: #666;
+        font-size: 0.9em;
+        margin: 10px 0;
+    }
+
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+    }
+
+    .price {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #667eea;
+    }
+</style>
