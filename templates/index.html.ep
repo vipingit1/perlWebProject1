@@ -1,9 +1,9 @@
 % layout 'default';
-% title 'Welcome to Perl Ecommerce';
+% title 'Welcome to VGAG SUITE';
 
 <div class="hero-section">
     <div class="container">
-        <h1>Welcome to VGAG BUSINESS SUITE</h1>
+        <h1>Welcome to VGAG SUITE</h1>
         <p>Your one-stop shop for quality products</p>
         <a href="/products" class="btn btn-primary btn-lg">Shop Now</a>
     </div>
@@ -24,7 +24,7 @@
                             <p class="category"><%= $product->{category} %></p>
                             <p class="description"><%= substr($product->{description} // '', 0, 100) %>...</p>
                             <div class="product-footer">
-                                <span class="price">$<%= sprintf('%.2f', $product->{price}) %></span>
+                                <span class="price"><%= $c->display_money($product->{price}) %></span>
                                 <a href="/product/<%= $product->{id} %>" class="btn btn-sm btn-info">View</a>
                             </div>
                         </div>

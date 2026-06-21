@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - Perl Ecommerce</title>
+    <title><%= title %> - VGAG SUITE</title>
     <style>
         * {
             margin: 0;
@@ -233,20 +233,38 @@
     </style>
 </head>
 <body>
+    % my $lang = $c->current_language;
+    % my $currency = $c->current_currency;
+    % my $current_path = $c->req->url->path->to_string;
     <!-- Navigation -->
     <nav>
         <div class="container">
-            <div class="logo">🛒 Perl Ecommerce</div>
+            <div class="logo">🛒 VGAG SUITE</div>
             <div class="nav-right">
-                <a href="/">Home</a>
-                <a href="/products">Products</a>
+                <a href="/"><%= $c->t('home') %></a>
+                <a href="/products"><%= $c->t('products') %></a>
                 % if (session('user_id')) {
-                    <a href="/cart">Cart</a>
-                    <a href="/logout">Logout</a>
+                    <a href="/cart"><%= $c->t('cart') %></a>
+                    <a href="/logout"><%= $c->t('logout') %></a>
                 % } else {
-                    <a href="/login">Login</a>
-                    <a href="/register">Register</a>
+                    <a href="/login"><%= $c->t('login') %></a>
+                    <a href="/register"><%= $c->t('register') %></a>
                 % }
+                <form method="POST" action="/preferences" style="display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px; background: transparent; border: 0; max-width: none;">
+                    <input type="hidden" name="return_to" value="<%= $current_path %>">
+                    <label for="lang-select" style="color: #fff; margin: 0;"><%= $c->t('language') %></label>
+                    <select id="lang-select" name="lang" onchange="this.form.submit()" style="width: auto; padding: 6px;">
+                        % for my $lang_code (sort keys %{$c->languages}) {
+                            <option value="<%= $lang_code %>" <%= $lang_code eq $lang ? 'selected' : '' %>><%= $c->languages->{$lang_code} %></option>
+                        % }
+                    </select>
+                    <label for="currency-select" style="color: #fff; margin: 0;"><%= $c->t('currency') %></label>
+                    <select id="currency-select" name="currency" onchange="this.form.submit()" style="width: auto; padding: 6px;">
+                        % for my $currency_code (sort keys %{$c->currencies}) {
+                            <option value="<%= $currency_code %>" <%= $currency_code eq $currency ? 'selected' : '' %>><%= $currency_code %></option>
+                        % }
+                    </select>
+                </form>
             </div>
         </div>
     </nav>
@@ -287,12 +305,12 @@
             </div>
             <div>
                 <h4>Contact</h4>
-                <p>Email: support@perlecommerce.com</p>
-                <p>Phone: 1-800-PERL-ECO</p>
+                <p>Email: support@vgagsuite.com</p>
+                <p>Phone: 1-800-VGAG-SUITE</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Perl Ecommerce. All rights reserved.</p>
+            <p>&copy; 2024 VGAG SUITE. All rights reserved.</p>
         </div>
     </footer>
 </body>

@@ -1,0 +1,37 @@
+% layout 'default';
+% title 'Manage Products';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Manage Products</h1>
+    <a href="/admin/product/add" class="btn btn-primary" style="margin-top: 15px;">Add Product</a>
+
+    <table style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            % foreach my $product (@$products) {
+                <tr>
+                    <td><%= $product->{id} %></td>
+                    <td><%= $product->{name} %></td>
+                    <td><%= $product->{category} // '-' %></td>
+                    <td>$<%= sprintf('%.2f', $product->{price}) %></td>
+                    <td><%= $product->{stock} %></td>
+                    <td>
+                        <a href="/admin/product/<%= $product->{id} %>/edit" class="btn btn-info btn-sm">Edit</a>
+                        <form method="POST" action="/admin/product/<%= $product->{id} %>/delete" style="display: inline; margin: 0; padding: 0; background: transparent; border: 0; max-width: none;">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            % }
+        </tbody>
+    </table>
+</div>

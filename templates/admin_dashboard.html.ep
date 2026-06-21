@@ -1,0 +1,26 @@
+% layout 'default';
+% title 'Admin Dashboard';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Admin Dashboard</h1>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-top: 25px;">
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 20px;">
+            <h3>Products</h3>
+            <p style="font-size: 1.8em; color: #667eea;"><%= $products // 0 %></p>
+        </div>
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 20px;">
+            <h3>Orders</h3>
+            <p style="font-size: 1.8em; color: #667eea;"><%= $orders // 0 %></p>
+        </div>
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 20px;">
+            <h3>Users</h3>
+            <p style="font-size: 1.8em; color: #667eea;"><%= $users // 0 %></p>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <a href="/admin/products" class="btn btn-primary">Manage Products</a>
+        <a href="/admin/orders" class="btn btn-info">Manage Orders</a>
+    </div>
+</div>

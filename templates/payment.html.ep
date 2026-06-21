@@ -1,0 +1,52 @@
+% layout 'default';
+% title $c->t('payment_page');
+% my $order = stash('order');
+% my $items = stash('items') // [];
+
+<div class="container" style="margin: 60px auto;">
+    <h1><%= $c->t('payment_page') %> - Order #<%= $order->{id} %></h1>
+    <p style="margin-top: 10px;">Tracking Number: <strong><%= $order->{tracking_number} %></strong></p>
+    <p>Order Total: <strong><%= $c->format_money($order->{total_price}, $order->{currency}) %></strong></p>
+
+    <h2 style="margin-top: 25px;">Items</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            % foreach my $item (@$items) {
+                <tr>
+                    <td><%= $item->{name} %></td>
+                    <td><%= $item->{quantity} %></td>
+                    <td><%= $c->format_money($item->{price}, $order->{currency}) %></td>
+                    <td><%= $c->format_money($item->{price} * $item->{quantity}, $order->{currency}) %></td>
+                </tr>
+            % }
+        </tbody>
+    </table>
+
+    <h2 style="margin-top: 25px;"><%= $c->t('shipping_details') %></h2>
+    <p><strong><%= $order->{shipping_name} %></strong></p>
+    <p><%= $order->{shipping_phone} %></p>
+    <p><%= $order->{shipping_address} %>, <%= $order->{shipping_city} %> - <%= $order->{shipping_postal_code} %>, <%= $order->{shipping_country} %></p>
+
+    <form method="POST" action="/payment/<%= $order->{id} %>" style="margin-top: 25px;">
+        <div class="form-group">
+            <label for="payment_method">Select Payment Method</label>
+            <select id="payment_method" name="payment_method" required>
+                <option value="">Choose payment method</option>
+                <option value="card">Credit / Debit Card</option>
+                <option value="upi">UPI</option>
+                <option value="net_banking">Net Banking</option>
+                <option value="paypal">PayPal</option>
+                <option value="cash_on_delivery">Cash on Delivery</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary"><%= $c->t('pay_now') %></button>
+    </form>
+</div>

@@ -1,0 +1,45 @@
+% layout 'default';
+% title 'Your Cart';
+% my $items = stash('items') // [];
+% my $total = stash('total') // 0;
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Your Cart</h1>
+
+    % if (!@$items) {
+        <p style="margin-top: 20px;">Your cart is empty.</p>
+        <a href="/products" class="btn btn-primary" style="margin-top: 20px;">Continue Shopping</a>
+    % } else {
+        <table style="margin-top: 25px;">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                % foreach my $item (@$items) {
+                    <tr>
+                        <td><%= $item->{name} %></td>
+                        <td><%= $c->display_money($item->{price}) %></td>
+                        <td><%= $item->{quantity} %></td>
+                        <td><%= $c->display_money($item->{subtotal}) %></td>
+                        <td>
+                            <form method="POST" action="/cart/remove/<%= $item->{id} %>" style="margin: 0; padding: 0; background: transparent; border: 0; max-width: none;">
+                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                % }
+            </tbody>
+        </table>
+
+        <h3 style="text-align: right; margin-top: 20px;">Total: <%= $c->display_money($total) %></h3>
+
+        <h2 style="margin-top: 30px;">Checkout</h2>
+        <a href="/checkout" class="btn btn-primary" style="margin-top: 15px;">Proceed to Checkout</a>
+    % }
+</div>

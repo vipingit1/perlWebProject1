@@ -12,7 +12,7 @@
                     <p style="color: #999;"><%= $product->{category} %></p>
                     <p><%= substr($product->{description} // '', 0, 100) %>...</p>
                     <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 1.3em; font-weight: bold; color: #667eea;">$<%= sprintf('%.2f', $product->{price}) %></span>
+                        <span style="font-size: 1.3em; font-weight: bold; color: #667eea;"><%= $c->display_money($product->{price}) %></span>
                         <a href="/product/<%= $product->{id} %>" class="btn btn-info">View Details</a>
                     </div>
                 </div>

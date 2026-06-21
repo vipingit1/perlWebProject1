@@ -1,4 +1,4 @@
-# Setup Guide - Perl Ecommerce Platform
+# Setup Guide - VGAG SUITE
 
 ## Quick Start (5 minutes)
 
@@ -108,8 +108,8 @@ Or using a process manager:
 
 ```bash
 sudo apt-get install supervisor
-# Add to /etc/supervisor/conf.d/ecommerce.conf
-[program:ecommerce]
+# Add to /etc/supervisor/conf.d/vgag-suite.conf
+[program:vgag-suite]
 command=perl /path/to/app.pl daemon -l http://*:3000
 autostart=true
 autorestart=true
@@ -223,7 +223,7 @@ perl app.pl daemon -l http://*:8080  # Use port 8080
 Edit `app.pl` and find this line:
 
 ```perl
-app->secrets(['perl-ecommerce-secret-key']);
+app->secrets(['vgag-suite-secret-key']);
 ```
 
 Change to:

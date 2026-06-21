@@ -1,6 +1,6 @@
-# Perl Ecommerce Platform
+# VGAG SUITE
 
-A complete, production-ready ecommerce web application built with Perl using the Mojolicious framework.
+A complete, production-ready ecommerce web application for VGAG SUITE, built with Perl using the Mojolicious framework.
 
 ## Features
 
@@ -23,9 +23,18 @@ A complete, production-ready ecommerce web application built with Perl using the
 
 ✅ **Checkout & Orders**
 - Complete checkout process
+- Shipping form with name/phone/address/city/postal/country
+- Dedicated payment page and payment method selection
+- Auto-generated tracking number for each order
+- Order confirmation email (SMTP or local file outbox)
 - Order creation and management
 - Order history tracking
 - Order status updates
+
+✅ **Global Experience**
+- Multiple currencies (USD, EUR, GBP, INR)
+- Multiple languages (English, Hindi, Spanish)
+- Session-based language and currency preferences
 
 ✅ **Admin Dashboard**
 - Product management (add/edit/delete)
@@ -200,9 +209,12 @@ perl sample_data.pl
 
 Edit `app.pl` to customize:
 
-- **Secret Key**: Line `app->secrets(['perl-ecommerce-secret-key']);`
+- **Secret Key**: Line `app->secrets(['vgag-suite-secret-key']);`
 - **Database**: Line `DBI->connect('dbi:SQLite:ecommerce.db', ...)` 
 - **Port**: Line `perl app.pl daemon -l http://*:3000`
+- **SMTP (optional for real email delivery)**:
+  - `SMTP_HOST=smtp.example.com`
+  - `SMTP_FROM=no-reply@vgagsuite.com`
 
 ## Troubleshooting
 
