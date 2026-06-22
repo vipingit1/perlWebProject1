@@ -476,7 +476,7 @@ helper shiprocket_get_rates => sub ($c, $params) {
 helper send_email => sub ($c, $to, $subject, $body, $html = 0) {
     my $smtp_host = 'localhost';
     my $smtp_port = 25;
-    my $from = 'support@vgagbusinesssuite.com';
+    my $from = 'noreply@vgagbusinesssuite.com';
     
     my $smtp = Net::SMTP->new($smtp_host, Port => $smtp_port, Timeout => 10);
     unless ($smtp) {
@@ -484,8 +484,18 @@ helper send_email => sub ($c, $to, $subject, $body, $html = 0) {
         return { success => 0, error => 'SMTP connection failed' };
     }
     
-    $smtp->mail($from);
-    $smtp->to($to);
+    unless ($smtp->mail($from)) {
+        warn "SMTP mail() failed: " . $smtp->message;
+        $smtp->quit;
+        return { success => 0, error => $smtp->message };
+    }
+    
+    unless ($smtp->to($to)) {
+        warn "SMTP to() failed: " . $smtp->message;
+        $smtp->quit;
+        return { success => 0, error => $smtp->message };
+    }
+    
     $smtp->data();
     
     my $headers = "From: $from\r\n";
