@@ -476,7 +476,7 @@ helper shiprocket_get_rates => sub ($c, $params) {
 helper send_email => sub ($c, $to, $subject, $body, $html = 0) {
     my $smtp_host = 'localhost';
     my $smtp_port = 25;
-    my $from = 'noreply@vgagbusinesssuite.com';
+    my $from = 'team@vgagbusinesssuite.com';
     
     my $smtp = Net::SMTP->new($smtp_host, Port => $smtp_port, Timeout => 10);
     unless ($smtp) {
