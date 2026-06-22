@@ -623,7 +623,7 @@ Items:
 $line_items
 
 Thank you for shopping with us!
-Support: support@vgagbusinesssuite.com
+Support: support\@vgagbusinesssuite.com
 
 EMAIL
 
