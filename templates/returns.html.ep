@@ -1,0 +1,12 @@
+% layout 'default';
+% title 'Returns';
+
+<div class="container" style="margin: 60px auto; max-width: 900px;">
+    <h1>Returns & Refunds</h1>
+    <p style="margin-top: 12px;">
+        You can request a return within 7 days of delivery for damaged, defective, or incorrect items.
+    </p>
+    <p>Products must be returned in original condition with packaging and invoice.</p>
+    <p>Refunds are processed after quality check and usually completed within 5-7 business days.</p>
+    <p style="margin-top: 12px;">To initiate a return, contact support with your order ID and issue details.</p>
+</div>

@@ -1,0 +1,66 @@
+% layout 'default', title => 'Shiprocket Settings - Admin';
+
+<div class="container mt-4">
+    <h2>Shiprocket Shipping Integration</h2>
+    
+    % if (flash('message')) {
+        <div class="alert alert-success"><%= flash('message') %></div>
+    % }
+    % if (flash('error')) {
+        <div class="alert alert-danger"><%= flash('error') %></div>
+    % }
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Authentication Status</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Auth Token:</strong> <%= $token %></p>
+            <p><strong>Customer ID:</strong> <%= $customer_id %></p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5>Configure Shiprocket</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="<%= url_for '/admin/shiprocket/login' %>">
+                <div class="form-group">
+                    <label>Shiprocket Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                    <small class="form-text text-muted">Your Shiprocket account email</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Shiprocket Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                    <small class="form-text text-muted">Your Shiprocket account password</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Authenticate with Shiprocket</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Integration Guide</h5>
+        </div>
+        <div class="card-body">
+            <ol>
+                <li>Enter your Shiprocket credentials above and click "Authenticate"</li>
+                <li>Once authenticated, go to Orders management</li>
+                <li>For each order, you can create a shipment which auto-generates tracking</li>
+                <li>Customers can track their orders using the tracking link</li>
+                <li>Real-time shipping rates calculated at checkout</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<style>
+.card { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.btn-primary { background: #007bff; }
+.alert { padding: 12px; border-radius: 4px; }
+</style>

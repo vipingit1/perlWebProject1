@@ -1,0 +1,64 @@
+% layout 'default';
+% title 'Tax Invoice';
+% my $gstin = $ENV{BUSINESS_GSTIN} // 'GSTIN-NOT-SET';
+
+<div class="container" style="margin: 40px auto;">
+    <h1>Tax Invoice</h1>
+    <p><strong>Invoice No:</strong> <%= $invoice_number %></p>
+    <p><strong>Order ID:</strong> <%= $order->{id} %></p>
+    <p><strong>Invoice Date:</strong> <%= $order->{created_at} %></p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+        <div>
+            <h3>Seller Details</h3>
+            <p>VGAG BUSINESS SUITE</p>
+            <p>GSTIN: <%= $gstin %></p>
+            <p>support@vgagbusinesssuite.com</p>
+        </div>
+        <div>
+            <h3>Buyer Details</h3>
+            <p><%= $order->{shipping_name} // '' %></p>
+            <p><%= $order->{shipping_phone} // '' %></p>
+            <p><%= $order->{shipping_address} // '' %></p>
+            <p><%= $order->{shipping_city} // '' %> <%= $order->{shipping_postal_code} // '' %></p>
+            <p><%= $order->{shipping_country} // '' %></p>
+        </div>
+    </div>
+
+    <table style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>HSN</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Taxable</th>
+                <th>GST %</th>
+                <th>GST Amount</th>
+                <th>Line Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            % foreach my $item (@$items) {
+                <tr>
+                    <td><%= $item->{name} %></td>
+                    <td><%= $item->{hsn_code} // '0000' %></td>
+                    <td><%= $item->{quantity} %></td>
+                    <td><%= $c->format_money($item->{price}, $order->{currency}) %></td>
+                    <td><%= $c->format_money($item->{taxable_amount}, $order->{currency}) %></td>
+                    <td><%= sprintf('%.2f', $item->{gst_rate} // 0) %></td>
+                    <td><%= $c->format_money($item->{tax_amount}, $order->{currency}) %></td>
+                    <td><%= $c->format_money($item->{line_total}, $order->{currency}) %></td>
+                </tr>
+            % }
+        </tbody>
+    </table>
+
+    <div style="margin-top: 20px; max-width: 420px; margin-left: auto;">
+        <p><strong>Taxable Value:</strong> <%= $c->format_money($taxable_total, $order->{currency}) %></p>
+        <p><strong>CGST:</strong> <%= $c->format_money($cgst_total, $order->{currency}) %></p>
+        <p><strong>SGST:</strong> <%= $c->format_money($sgst_total, $order->{currency}) %></p>
+        <p><strong>Total GST:</strong> <%= $c->format_money($gst_total, $order->{currency}) %></p>
+        <p style="font-size: 1.2em;"><strong>Invoice Total:</strong> <%= $c->format_money($grand_total, $order->{currency}) %></p>
+    </div>
+</div>

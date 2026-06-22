@@ -1,12 +1,13 @@
 % layout 'default';
 % title $c->t('payment_page');
-% my $order = stash('order');
+% my $pending = stash('pending') // {};
 % my $items = stash('items') // [];
+% my $total = stash('total') // 0;
 
 <div class="container" style="margin: 60px auto;">
-    <h1><%= $c->t('payment_page') %> - Order #<%= $order->{id} %></h1>
-    <p style="margin-top: 10px;">Tracking Number: <strong><%= $order->{tracking_number} %></strong></p>
-    <p>Order Total: <strong><%= $c->format_money($order->{total_price}, $order->{currency}) %></strong></p>
+    <h1><%= $c->t('payment_page') %></h1>
+    <p style="margin-top: 10px;">Tracking Number: <strong><%= $pending->{tracking_number} %></strong></p>
+    <p>Order Total: <strong><%= $c->format_money($total, $pending->{currency}) %></strong></p>
 
     <h2 style="margin-top: 25px;">Items</h2>
     <table>
@@ -23,19 +24,19 @@
                 <tr>
                     <td><%= $item->{name} %></td>
                     <td><%= $item->{quantity} %></td>
-                    <td><%= $c->format_money($item->{price}, $order->{currency}) %></td>
-                    <td><%= $c->format_money($item->{price} * $item->{quantity}, $order->{currency}) %></td>
+                    <td><%= $c->format_money($c->convert_from_usd($item->{price}, $pending->{currency}), $pending->{currency}) %></td>
+                    <td><%= $c->format_money($c->convert_from_usd($item->{price} * $item->{quantity}, $pending->{currency}), $pending->{currency}) %></td>
                 </tr>
             % }
         </tbody>
     </table>
 
     <h2 style="margin-top: 25px;"><%= $c->t('shipping_details') %></h2>
-    <p><strong><%= $order->{shipping_name} %></strong></p>
-    <p><%= $order->{shipping_phone} %></p>
-    <p><%= $order->{shipping_address} %>, <%= $order->{shipping_city} %> - <%= $order->{shipping_postal_code} %>, <%= $order->{shipping_country} %></p>
+    <p><strong><%= $pending->{shipping_name} %></strong></p>
+    <p><%= $pending->{shipping_phone} %></p>
+    <p><%= $pending->{shipping_address} %>, <%= $pending->{shipping_city} %> - <%= $pending->{shipping_postal_code} %>, <%= $pending->{shipping_country} %></p>
 
-    <form method="POST" action="/payment/<%= $order->{id} %>" style="margin-top: 25px;">
+    <form method="POST" action="/payment" style="margin-top: 25px;">
         <div class="form-group">
             <label for="payment_method">Select Payment Method</label>
             <select id="payment_method" name="payment_method" required>
@@ -47,6 +48,60 @@
                 <option value="cash_on_delivery">Cash on Delivery</option>
             </select>
         </div>
+        <div class="form-group" id="card-fields" style="display: none;">
+            <label for="card_holder">Card Holder Name</label>
+            <input type="text" id="card_holder" name="card_holder">
+            <label for="card_number" style="margin-top: 10px;">Card Number</label>
+            <input type="text" id="card_number" name="card_number" maxlength="19">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                <div>
+                    <label for="expiry_month">Expiry Month (MM)</label>
+                    <input type="text" id="expiry_month" name="expiry_month" maxlength="2">
+                </div>
+                <div>
+                    <label for="expiry_year">Expiry Year (YYYY)</label>
+                    <input type="text" id="expiry_year" name="expiry_year" maxlength="4">
+                </div>
+            </div>
+            <label for="cvv" style="margin-top: 10px;">CVV</label>
+            <input type="password" id="cvv" name="cvv" maxlength="4">
+        </div>
+        <div class="form-group" id="upi-fields" style="display: none;">
+            <label for="upi_id">UPI ID</label>
+            <input type="text" id="upi_id" name="upi_id" placeholder="example@bank">
+        </div>
+        <div class="form-group" id="netbanking-fields" style="display: none;">
+            <label for="bank_name">Bank Name</label>
+            <input type="text" id="bank_name" name="bank_name">
+            <label for="account_last4" style="margin-top: 10px;">Account Last 4 Digits</label>
+            <input type="text" id="account_last4" name="account_last4" maxlength="4">
+        </div>
+        <div class="form-group" id="paypal-fields" style="display: none;">
+            <label for="paypal_email">PayPal Email</label>
+            <input type="email" id="paypal_email" name="paypal_email">
+        </div>
         <button type="submit" class="btn btn-primary"><%= $c->t('pay_now') %></button>
     </form>
 </div>
+
+<script>
+    (function () {
+        const method = document.getElementById('payment_method');
+        const card = document.getElementById('card-fields');
+        const upi = document.getElementById('upi-fields');
+        const netbank = document.getElementById('netbanking-fields');
+        const paypal = document.getElementById('paypal-fields');
+        const sections = [card, upi, netbank, paypal];
+
+        function toggleFields() {
+            sections.forEach(function (el) { el.style.display = 'none'; });
+            if (method.value === 'card') card.style.display = 'block';
+            if (method.value === 'upi') upi.style.display = 'block';
+            if (method.value === 'net_banking') netbank.style.display = 'block';
+            if (method.value === 'paypal') paypal.style.display = 'block';
+        }
+
+        method.addEventListener('change', toggleFields);
+        toggleFields();
+    })();
+</script>

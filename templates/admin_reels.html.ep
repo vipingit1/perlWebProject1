@@ -1,0 +1,94 @@
+% layout 'default';
+% title 'Meta Reels Automation';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Meta Reels Automation</h1>
+
+    <h2 style="margin-top: 25px;">Connection & Reel Settings</h2>
+    <form method="POST" action="/admin/reels/config" style="max-width: 700px;">
+        <div class="form-group">
+            <label for="public_base_url">Public Base URL (where /reels files are accessible)</label>
+            <input type="url" id="public_base_url" name="public_base_url" value="<%= $config->{public_base_url} // '' %>" placeholder="https://backup.vgagbusinesssolutions.com" required>
+        </div>
+        <div class="form-group">
+            <label for="ig_user_id">Instagram Business User ID</label>
+            <input type="text" id="ig_user_id" name="ig_user_id" value="<%= $config->{ig_user_id} // '' %>" required>
+        </div>
+        <div class="form-group">
+            <label for="access_token">Meta Access Token</label>
+            <input type="password" id="access_token" name="access_token" required>
+        </div>
+        <div class="form-group">
+            <label for="model_clip_path">Female Model Video Path on Server (mp4)</label>
+            <input type="text" id="model_clip_path" name="model_clip_path" value="<%= $config->{model_clip_path} // '' %>" placeholder="/absolute/path/to/female-model.mp4" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+    </form>
+
+    <h2 style="margin-top: 35px;">Generate and Post Reel</h2>
+    <p>Select a product and post an automated reel to Meta.</p>
+    <form method="POST" action="/admin/reels/run/0" id="run-form" style="max-width: 700px;">
+        <div class="form-group">
+            <label for="product_id">Product</label>
+            <select id="product_id" required>
+                <option value="">Select product</option>
+                % foreach my $product (@$products) {
+                    <option value="<%= $product->{id} %>"><%= $product->{id} %> - <%= $product->{name} %></option>
+                % }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="caption">Caption</label>
+            <textarea id="caption" name="caption" placeholder="Now live: Product name #vgagbusinesssuite #reels"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate + Post Reel</button>
+    </form>
+
+    <h2 style="margin-top: 35px;">Recent Reel Jobs</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Product</th>
+                <th>Status</th>
+                <th>Reel URL</th>
+                <th>Meta Media ID</th>
+                <th>Error</th>
+                <th>Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            % foreach my $job (@$jobs) {
+                <tr>
+                    <td><%= $job->{id} %></td>
+                    <td><%= $job->{product_name} %></td>
+                    <td><%= $job->{status} %></td>
+                    <td>
+                        % if ($job->{reel_url}) {
+                            <a href="<%= $job->{reel_url} %>" target="_blank">Open</a>
+                        % } else {
+                            -
+                        % }
+                    </td>
+                    <td><%= $job->{meta_media_id} // '-' %></td>
+                    <td><%= $job->{error_message} // '-' %></td>
+                    <td><%= $job->{updated_at} %></td>
+                </tr>
+            % }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    (function () {
+        const form = document.getElementById('run-form');
+        const product = document.getElementById('product_id');
+        form.addEventListener('submit', function (e) {
+            if (!product.value) {
+                e.preventDefault();
+                return;
+            }
+            form.action = '/admin/reels/run/' + product.value;
+        });
+    })();
+</script>

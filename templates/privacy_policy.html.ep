@@ -1,0 +1,25 @@
+% layout 'default';
+% title 'Privacy Policy';
+
+<div class="container" style="margin: 60px auto; max-width: 900px;">
+    <h1>Privacy Policy</h1>
+    <p style="margin-top: 10px;">Last updated: 2026-06-22</p>
+
+    <h2 style="margin-top: 25px;">1. Information We Collect</h2>
+    <p>We collect account details, order information, shipping details, and payment references required to process purchases and support customers.</p>
+
+    <h2 style="margin-top: 20px;">2. How We Use Information</h2>
+    <p>We use your information to fulfill orders, manage shipping, generate invoices, send confirmations, provide support, and improve service quality.</p>
+
+    <h2 style="margin-top: 20px;">3. Data Sharing</h2>
+    <p>We only share necessary information with payment providers, logistics partners, and required compliance systems to complete transactions and legal obligations.</p>
+
+    <h2 style="margin-top: 20px;">4. Data Retention</h2>
+    <p>Order and billing records are retained as required for accounting, taxation, and audit compliance.</p>
+
+    <h2 style="margin-top: 20px;">5. Security</h2>
+    <p>We apply access controls and operational safeguards to protect customer data from unauthorized access and misuse.</p>
+
+    <h2 style="margin-top: 20px;">6. Contact</h2>
+    <p>For privacy requests, contact us at <strong>support@vgagbusinesssuite.com</strong>.</p>
+</div>

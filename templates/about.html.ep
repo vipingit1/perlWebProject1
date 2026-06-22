@@ -1,0 +1,14 @@
+% layout 'default';
+% title 'About';
+
+<div class="container" style="margin: 60px auto; max-width: 900px;">
+    <h1>About VGAG BUSINESS SUITE</h1>
+    <p style="margin-top: 12px;">
+        VGAG BUSINESS SUITE is a commerce platform focused on curated products, reliable fulfillment,
+        and quality customer support.
+    </p>
+    <p style="margin-top: 12px;">
+        Our mission is to help customers discover handcrafted and business-ready products through a
+        simple and transparent buying experience.
+    </p>
+</div>

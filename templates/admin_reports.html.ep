@@ -1,0 +1,69 @@
+% layout 'default';
+% title 'Sales, P&L and GST Dashboard';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Sales, Profit & GST Dashboard</h1>
+    <p style="margin-top: 8px;">Report currency: INR</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px;">
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px;">
+            <h4>Today's Sales</h4>
+            <p style="font-size: 1.5em; color: #667eea;">INR <%= sprintf('%.2f', $today_sales_inr) %></p>
+        </div>
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px;">
+            <h4>Monthly Sales</h4>
+            <p style="font-size: 1.5em; color: #667eea;">INR <%= sprintf('%.2f', $month_sales_inr) %></p>
+        </div>
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px;">
+            <h4>Total Sales</h4>
+            <p style="font-size: 1.5em; color: #667eea;">INR <%= sprintf('%.2f', $total_sales_inr) %></p>
+        </div>
+    </div>
+
+    <h2 style="margin-top: 35px;">Profit & Loss (Gross)</h2>
+    <table>
+        <tr><th>Metric</th><th>Amount (INR)</th></tr>
+        <tr><td>Taxable Sales</td><td><%= sprintf('%.2f', $taxable_sales_inr) %></td></tr>
+        <tr><td>Cost of Goods Sold</td><td><%= sprintf('%.2f', $cogs_inr) %></td></tr>
+        <tr><td><strong>Gross Profit</strong></td><td><strong><%= sprintf('%.2f', $gross_profit_inr) %></strong></td></tr>
+    </table>
+
+    <h2 style="margin-top: 35px;">GST Compliance Snapshot</h2>
+    <table>
+        <tr><th>Metric</th><th>Amount (INR)</th></tr>
+        <tr><td>Taxable Turnover</td><td><%= sprintf('%.2f', $taxable_sales_inr) %></td></tr>
+        <tr><td>Output GST</td><td><%= sprintf('%.2f', $gst_total_inr) %></td></tr>
+        <tr><td>CGST (50%)</td><td><%= sprintf('%.2f', $cgst_inr) %></td></tr>
+        <tr><td>SGST (50%)</td><td><%= sprintf('%.2f', $sgst_inr) %></td></tr>
+    </table>
+
+    <h2 style="margin-top: 35px;">Daily Sales (Last 30 days)</h2>
+    <table>
+        <thead>
+            <tr><th>Date</th><th>Total Sales (INR)</th></tr>
+        </thead>
+        <tbody>
+            % foreach my $row (@$sales_by_day) {
+                <tr>
+                    <td><%= $row->{day} %></td>
+                    <td><%= sprintf('%.2f', $row->{total_inr}) %></td>
+                </tr>
+            % }
+        </tbody>
+    </table>
+
+    <h2 style="margin-top: 35px;">Top Products by Units Sold</h2>
+    <table>
+        <thead>
+            <tr><th>Product</th><th>Units Sold</th></tr>
+        </thead>
+        <tbody>
+            % foreach my $product (@$top_products) {
+                <tr>
+                    <td><%= $product->{name} %></td>
+                    <td><%= $product->{qty} %></td>
+                </tr>
+            % }
+        </tbody>
+    </table>
+</div>

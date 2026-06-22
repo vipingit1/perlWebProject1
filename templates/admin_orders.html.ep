@@ -12,30 +12,42 @@
                 <th>Total</th>
                 <th>Status</th>
                 <th>Created</th>
-                <th>Update</th>
-            </tr>
-        </thead>
-        <tbody>
-            % foreach my $order (@$orders) {
-                <tr>
-                    <td><%= $order->{id} %></td>
-                    <td><%= $order->{username} %> (<%= $order->{email} %>)</td>
-                    <td>$<%= sprintf('%.2f', $order->{total_price}) %></td>
-                    <td><%= $order->{status} %></td>
-                    <td><%= $order->{created_at} %></td>
-                    <td>
-                        <form method="POST" action="/admin/order/<%= $order->{id} %>/status" style="display: flex; gap: 8px; margin: 0; padding: 0; background: transparent; border: 0; max-width: none;">
-                            <select name="status">
-                                % my @statuses = ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
-                                % foreach my $status (@statuses) {
-                                    <option value="<%= $status %>" <%= $status eq $order->{status} ? 'selected' : '' %>><%= ucfirst $status %></option>
-                                % }
-                            </select>
-                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                        </form>
-                    </td>
+                <th>Invoice</th>
+                    <th>Tracking</th>
+                    <th>Update</th>
                 </tr>
-            % }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                % foreach my $order (@$orders) {
+                    <tr>
+                        <td><%= $order->{id} %></td>
+                        <td><%= $order->{username} %> (<%= $order->{email} %>)</td>
+                        <td><%= $c->format_money($order->{total_price}, $order->{currency}) %></td>
+                        <td><%= $order->{status} %></td>
+                        <td><%= $order->{created_at} %></td>
+                        <td><a href="/invoice/<%= $order->{id} %>" class="btn btn-info btn-sm">View</a></td>
+                        <td>
+                            % if ($order->{tracking_number}) {
+                                <a href="/admin/order/<%= $order->{id} %>/tracking" class="btn btn-success btn-sm">Track</a>
+                            % } else {
+                                <form method="POST" action="/admin/order/<%= $order->{id} %>/create-shipment" style="display: inline;">
+                                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Create shipment via Shiprocket?')">Create Ship</button>
+                                </form>
+                            % }
+                        </td>
+                        <td>
+                            <form method="POST" action="/admin/order/<%= $order->{id} %>/status" style="display: flex; gap: 8px; margin: 0; padding: 0; background: transparent; border: 0; max-width: none;">
+                                <select name="status">
+                                    % my @statuses = ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
+                                    % foreach my $status (@statuses) {
+                                        <option value="<%= $status %>" <%= $status eq $order->{status} ? 'selected' : '' %>><%= ucfirst $status %></option>
+                                    % }
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                % }
+            </tbody>
+        </table>
 </div>

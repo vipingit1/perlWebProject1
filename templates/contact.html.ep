@@ -1,0 +1,12 @@
+% layout 'default';
+% title 'Contact';
+
+<div class="container" style="margin: 60px auto; max-width: 900px;">
+    <h1>Contact Us</h1>
+    <p style="margin-top: 12px;"><strong>Email:</strong> support@vgagbusinesssuite.com</p>
+    <p><strong>Phone:</strong> 1-800-VGAG-SUITE</p>
+    <p><strong>Support Hours:</strong> Monday to Saturday, 10:00 AM - 7:00 PM IST</p>
+    <p style="margin-top: 12px;">
+        For order support, please mention your order ID in the email subject.
+    </p>
+</div>

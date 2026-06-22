@@ -1,0 +1,13 @@
+% layout 'default';
+% title 'Shop';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Shop</h1>
+    <p style="margin-top: 10px;">Select a section to continue.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 30px;">
+        <a href="/shop/padma-impex" class="btn btn-primary" style="text-align: center; padding: 20px;">Padma Impex</a>
+        <a href="/shop/ngo-section8" class="btn btn-primary" style="text-align: center; padding: 20px;">NGO Section8</a>
+        <a href="/shop/vgag-business-solutions" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Business Solutions</a>
+    </div>
+</div>

@@ -8,6 +8,9 @@
         % if (@$products) {
             % foreach my $product (@$products) {
                 <div class="product-card" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <div style="height: 180px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; border-radius: 6px;">
+                        <img src="<%= $product->{image_url} // '/images/placeholder.png' %>" alt="<%= $product->{name} %>" style="max-width: 100%; max-height: 100%;">
+                    </div>
                     <h3><%= $product->{name} %></h3>
                     <p style="color: #999;"><%= $product->{category} %></p>
                     <p><%= substr($product->{description} // '', 0, 100) %>...</p>

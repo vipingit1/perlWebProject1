@@ -1,4 +1,4 @@
-# Setup Guide - VGAG SUITE
+# Setup Guide - VGAG BUSINESS SUITE
 
 ## Quick Start (5 minutes)
 
@@ -108,8 +108,8 @@ Or using a process manager:
 
 ```bash
 sudo apt-get install supervisor
-# Add to /etc/supervisor/conf.d/vgag-suite.conf
-[program:vgag-suite]
+# Add to /etc/supervisor/conf.d/vgag-business-suite.conf
+[program:vgag-business-suite]
 command=perl /path/to/app.pl daemon -l http://*:3000
 autostart=true
 autorestart=true
@@ -223,7 +223,7 @@ perl app.pl daemon -l http://*:8080  # Use port 8080
 Edit `app.pl` and find this line:
 
 ```perl
-app->secrets(['vgag-suite-secret-key']);
+app->secrets(['vgag-business-suite-secret-key']);
 ```
 
 Change to:

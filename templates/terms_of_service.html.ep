@@ -1,0 +1,25 @@
+% layout 'default';
+% title 'Terms of Service';
+
+<div class="container" style="margin: 60px auto; max-width: 900px;">
+    <h1>Terms of Service</h1>
+    <p style="margin-top: 10px;">Effective date: 2026-06-22</p>
+
+    <h2 style="margin-top: 25px;">1. Acceptance of Terms</h2>
+    <p>By accessing and using VGAG BUSINESS SUITE, you agree to these Terms of Service and applicable laws.</p>
+
+    <h2 style="margin-top: 20px;">2. Products and Pricing</h2>
+    <p>Product availability, pricing, and specifications may change without prior notice. Orders are subject to stock and payment confirmation.</p>
+
+    <h2 style="margin-top: 20px;">3. Payments and Orders</h2>
+    <p>Orders are confirmed only after successful payment authorization and stock validation. We reserve the right to cancel fraudulent or invalid transactions.</p>
+
+    <h2 style="margin-top: 20px;">4. Shipping and Returns</h2>
+    <p>Delivery timelines are estimates. Return, replacement, and cancellation handling follows published policy and applicable consumer law.</p>
+
+    <h2 style="margin-top: 20px;">5. Intellectual Property</h2>
+    <p>All content, branding, and materials on this website are owned by VGAG BUSINESS SUITE or licensed partners and may not be reused without permission.</p>
+
+    <h2 style="margin-top: 20px;">6. Contact</h2>
+    <p>For terms-related questions, contact <strong>support@vgagbusinesssuite.com</strong>.</p>
+</div>

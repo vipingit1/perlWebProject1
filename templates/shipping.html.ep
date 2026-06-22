@@ -1,0 +1,10 @@
+% layout 'default';
+% title 'Shipping Info';
+
+<div class="container" style="margin: 60px auto; max-width: 900px;">
+    <h1>Shipping Information</h1>
+    <p style="margin-top: 12px;">Orders are typically processed within 1-2 business days.</p>
+    <p>Standard delivery timeline is 3-7 business days, depending on destination.</p>
+    <p>Tracking details are shared once the order is packed and dispatched.</p>
+    <p style="margin-top: 12px;">Delays may occur during holidays, weather disruptions, or carrier constraints.</p>
+</div>

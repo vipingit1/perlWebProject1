@@ -1,0 +1,18 @@
+% layout 'default';
+% title 'FAQ';
+
+<div class="container" style="margin: 60px auto; max-width: 900px;">
+    <h1>Frequently Asked Questions</h1>
+
+    <h3 style="margin-top: 20px;">How can I track my order?</h3>
+    <p>Open your order details page and check the tracking number shown for your order.</p>
+
+    <h3 style="margin-top: 20px;">Can I cancel my order?</h3>
+    <p>Orders can be cancelled before shipping. Contact support with your order ID.</p>
+
+    <h3 style="margin-top: 20px;">Do you provide invoice?</h3>
+    <p>Yes, GST-ready invoices are available from the order details page.</p>
+
+    <h3 style="margin-top: 20px;">Which payment methods are supported?</h3>
+    <p>Card, UPI, Net Banking, PayPal, and Cash on Delivery (where applicable).</p>
+</div>

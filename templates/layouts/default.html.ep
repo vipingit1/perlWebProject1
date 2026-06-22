@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - VGAG SUITE</title>
+    <title><%= title %> - VGAG BUSINESS SUITE</title>
     <style>
         * {
             margin: 0;
@@ -47,6 +47,40 @@
 
         nav a:hover {
             color: #667eea;
+        }
+
+        .nav-item {
+            position: relative;
+            display: inline-block;
+        }
+
+        .submenu {
+            display: none;
+            position: absolute;
+            top: 30px;
+            left: 0;
+            min-width: 240px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 10px 0;
+            z-index: 200;
+        }
+
+        .submenu a {
+            display: block;
+            margin: 0;
+            padding: 8px 14px;
+            color: #fff;
+        }
+
+        .submenu a:hover {
+            background: #333;
+            color: #667eea;
+        }
+
+        .nav-item:hover .submenu {
+            display: block;
         }
 
         .logo {
@@ -239,10 +273,28 @@
     <!-- Navigation -->
     <nav>
         <div class="container">
-            <div class="logo">🛒 VGAG SUITE</div>
+            <div class="logo">🛒 VGAG BUSINESS SUITE</div>
             <div class="nav-right">
                 <a href="/"><%= $c->t('home') %></a>
                 <a href="/products"><%= $c->t('products') %></a>
+                <div class="nav-item">
+                    <a href="/about">Info</a>
+                    <div class="submenu">
+                        <a href="/about">About</a>
+                        <a href="/shipping">Shipping Info</a>
+                        <a href="/returns">Returns</a>
+                        <a href="/faq">FAQ</a>
+                        <a href="/contact">Contact</a>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="/shop">Shop</a>
+                    <div class="submenu">
+                        <a href="/shop/padma-impex">Padma Impex</a>
+                        <a href="/shop/ngo-section8">NGO Section8</a>
+                        <a href="/shop/vgag-business-solutions">VGAG Business Solutions</a>
+                    </div>
+                </div>
                 % if (session('user_id')) {
                     <a href="/cart"><%= $c->t('cart') %></a>
                     <a href="/logout"><%= $c->t('logout') %></a>
@@ -296,6 +348,8 @@
                 <a href="/products">Products</a>
                 <a href="/about">About</a>
                 <a href="/contact">Contact</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/terms-of-service">Terms of Service</a>
             </div>
             <div>
                 <h4>Customer Service</h4>
@@ -305,12 +359,12 @@
             </div>
             <div>
                 <h4>Contact</h4>
-                <p>Email: support@vgagsuite.com</p>
+                <p>Email: support@vgagbusinesssuite.com</p>
                 <p>Phone: 1-800-VGAG-SUITE</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 VGAG SUITE. All rights reserved.</p>
+            <p>&copy; 2024 VGAG BUSINESS SUITE. All rights reserved.</p>
         </div>
     </footer>
 </body>

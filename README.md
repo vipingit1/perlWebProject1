@@ -1,6 +1,6 @@
-# VGAG SUITE
+# VGAG BUSINESS SUITE
 
-A complete, production-ready ecommerce web application for VGAG SUITE, built with Perl using the Mojolicious framework.
+A complete, production-ready ecommerce web application for VGAG BUSINESS SUITE, built with Perl using the Mojolicious framework.
 
 ## Features
 
@@ -27,9 +27,20 @@ A complete, production-ready ecommerce web application for VGAG SUITE, built wit
 - Dedicated payment page and payment method selection
 - Auto-generated tracking number for each order
 - Order confirmation email (SMTP or local file outbox)
+- GST-ready invoice generation per order
 - Order creation and management
 - Order history tracking
 - Order status updates
+
+✅ **Business Reports**
+- Sales dashboard with daily/monthly/total metrics
+- Profit & loss summary (gross profit based on cost price)
+- GST compliance snapshot (taxable turnover, CGST, SGST)
+
+✅ **Meta Reels Automation**
+- Admin panel to configure Meta Graph API and reel settings
+- Automated reel generation from a female-model video template + product image
+- Direct posting flow for Instagram Reels via Meta API
 
 ✅ **Global Experience**
 - Multiple currencies (USD, EUR, GBP, INR)
@@ -209,12 +220,12 @@ perl sample_data.pl
 
 Edit `app.pl` to customize:
 
-- **Secret Key**: Line `app->secrets(['vgag-suite-secret-key']);`
+- **Secret Key**: Line `app->secrets(['vgag-business-suite-secret-key']);`
 - **Database**: Line `DBI->connect('dbi:SQLite:ecommerce.db', ...)` 
 - **Port**: Line `perl app.pl daemon -l http://*:3000`
 - **SMTP (optional for real email delivery)**:
   - `SMTP_HOST=smtp.example.com`
-  - `SMTP_FROM=no-reply@vgagsuite.com`
+  - `SMTP_FROM=no-reply@vgagbusinesssuite.com`
 
 ## Troubleshooting
 

@@ -1,0 +1,79 @@
+% layout 'default', title => 'Order Tracking';
+
+<div class="container mt-4">
+    <h2>Track Your Order</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Order #<%= $order->{id} %></h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Order Date:</strong> <%= $order->{created_at} %></p>
+                    <p><strong>Total Amount:</strong> <%= $order->{total_price} %> <%= $order->{currency} %></p>
+                    <p><strong>Status:</strong> <span class="badge badge-<%= $order->{status} eq 'pending' ? 'warning' : ($order->{status} eq 'shipped' ? 'info' : 'success') %>"><%= ucfirst($order->{status}) %></span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Shipping To:</strong></p>
+                    <p>
+                        <%= $order->{shipping_name} %><br>
+                        <%= $order->{shipping_address} %><br>
+                        <%= $order->{shipping_city} %>, <%= $order->{shipping_postal_code} %><br>
+                        <%= $order->{shipping_country} %>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    % if ($order->{tracking_number}) {
+        <div class="card">
+            <div class="card-header">
+                <h5>Shipping & Tracking</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Tracking Number:</strong> <%= $order->{tracking_number} %></p>
+                
+                % if ($tracking->{status}) {
+                    <p><strong>Current Status:</strong> <%= $tracking->{status} %></p>
+                    <p><strong>Last Update:</strong> <%= $tracking->{updated_at} // 'N/A' %></p>
+                    <p><strong>Courier:</strong> <%= $tracking->{courier_company_name} // 'N/A' %></p>
+                    
+                    % if ($tracking->{tracking_data} && @{$tracking->{tracking_data}}) {
+                        <h6>Timeline:</h6>
+                        <ul>
+                        % for my $event (@{$tracking->{tracking_data}}) {
+                            <li><strong><%= $event->{date} %> <%= $event->{time} %></strong> - <%= $event->{activity} %> (<%= $event->{location} // 'N/A' %>)</li>
+                        % }
+                        </ul>
+                    % } else {
+                        <p class="text-muted">No tracking updates yet. Please check back later.</p>
+                    % }
+                % } else {
+                    <p class="text-muted">Tracking information is being updated. Please check back in a few moments.</p>
+                % }
+            </div>
+        </div>
+    % } else {
+        <div class="alert alert-info">
+            <strong>Info:</strong> Your shipment hasn't been created yet. Please check back shortly once your order is processed.
+        </div>
+    % }
+    
+    <div class="mt-3">
+        <a href="<%= url_for '/order/' . $order->{id} %>" class="btn btn-secondary">Back to Order</a>
+        <a href="<%= url_for '/products' %>" class="btn btn-primary">Continue Shopping</a>
+    </div>
+</div>
+
+<style>
+.card { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.badge { padding: 5px 10px; border-radius: 3px; }
+.badge-warning { background: #ffc107; color: #000; }
+.badge-info { background: #17a2b8; }
+.badge-success { background: #28a745; }
+ul { margin: 15px 0; }
+li { margin: 8px 0; }
+.btn { padding: 8px 16px; margin-right: 10px; }
+</style>
