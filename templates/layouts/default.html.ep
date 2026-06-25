@@ -112,6 +112,24 @@
             color: #fde68a !important;
         }
 
+        .submenu-muted {
+            color: #9ca3af !important;
+            background: #2f3640 !important;
+            border-left-color: #6b7280 !important;
+            cursor: not-allowed;
+            pointer-events: none;
+            text-decoration: none;
+        }
+
+        .submenu-muted::before {
+            color: #9ca3af !important;
+        }
+
+        .submenu-muted:hover {
+            color: #d1d5db !important;
+            background: #3b4250 !important;
+        }
+
         .nav-item:hover .submenu {
             display: block;
         }
@@ -305,39 +323,59 @@
     % my $current_path = $c->req->url->path->to_string;
     % my $session_user = $c->get_session_user;
     % my $can_access_admin = $session_user && $c->has_access($session_user, qw(admin manager editor support));
+    % my $is_demo_user = $session_user && lc(($session_user->{username} // '')) eq 'demo';
     <!-- Navigation -->
     <nav>
         <div class="container">
             <div class="logo">🛒 VGAG BUSINESS SUITE</div>
             <div class="nav-right">
                 <a href="/"><%= $c->t('home') %></a>
-                <a href="/products"><%= $c->t('products') %></a>
+                % unless ($is_demo_user) {
+                    <a href="/products"><%= $c->t('products') %></a>
+                % }
                 <div class="nav-item">
                     <a href="/shop/business-partners">Business Partners</a>
                     <div class="submenu">
-                        <a class="submenu-child" href="/shop/sree-physio-therapists">Sree Physio Therapists</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists">Sree Physio Therapists</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/website-demo">Website Demo</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/brand-assets">Brand Assets</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/testimonials">Testimonials</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/videos">Videos</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/products">Products</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/team">Team</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/team">Team</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/social-media-links">Social Media Links</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/agreements">Agreements</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/payment-terms">Payment Terms</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/contract-terms">Contract Terms</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/payment-terms">Payment Terms</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/contract-terms">Contract Terms</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/business-info">Business Info (GST/MSME etc)</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/profit-sharing-agreement">Profit Sharing Agreement</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/profit-sharing-agreement">Profit Sharing Agreement</a>
                         <a class="submenu-child" href="/shop/sree-physio-therapists/services">Services</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/book-an-appointment">Book an Appointment</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/golive-date">GoLive Date</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/open-issues">Open Issues</a>
-                        <a class="submenu-child" href="/shop/sree-physio-therapists/workflow">Workflow</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/book-an-appointment">Book an Appointment</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/projects">PROJECTS</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/phase1">PHASE1</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/phase2">PHASE2</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/phase3">PHASE3</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/golive-date">GoLive Date</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/open-issues">Open Issues</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/workflow">Workflow</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/shopify-store">Shopify Store</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/whatsapp-catalogue">WhatsApp Catalogue</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/whatsapp-business-api">WhatsApp Business API</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/meta-verified">Meta Verified</a>
+                        <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/monetization">Monetization</a>
                     </div>
                 </div>
-                <a href="/shop/vendors">Vendors</a>
-                <a href="/shop/suppliers">Suppliers</a>
-                <a href="/shop/auditors">Auditors</a>
-                <a href="/shop/news">News</a>
+                % unless ($is_demo_user) {
+                    <a href="/shop/vendors">Vendors</a>
+                    <a href="/shop/suppliers">Suppliers</a>
+                    <a href="/shop/auditors">Auditors</a>
+                    <a href="/shop/news">News</a>
+                % }
+                <a href="/shop/trends-suggestions">Trends/Suggestions</a>
+                <a href="/about">About VGAG</a>
+                <a class="submenu-muted" href="/shop/delivery-shipping">Delivery/Shipping</a>
+                <a class="submenu-muted" href="/shop/sales-invoices">Sales and Invoices</a>
+                <a class="submenu-muted" href="/shop/reports-profit-loss">Reports/Profit Loss</a>
                 <a href="/shop/affiliates">Affiliates</a>
                 <a href="/shop/franchise">Franchise</a>
                 <div class="nav-item">
@@ -375,6 +413,7 @@
                     </div>
                 </div>
                 % if (session('user_id')) {
+                    <a href="/slack/connect">Slack Connect</a>
                     <a href="/cart"><%= $c->t('cart') %></a>
                     % if ($can_access_admin) {
                         <a href="/admin">Admin</a>
@@ -427,7 +466,9 @@
             </div>
             <div>
                 <h4>Quick Links</h4>
-                <a href="/products">Products</a>
+                % unless ($is_demo_user) {
+                    <a href="/products">Products</a>
+                % }
                 <a href="/about">About</a>
                 <a href="/contact">Contact</a>
                 <a href="/privacy-policy">Privacy Policy</a>
@@ -449,5 +490,14 @@
             <p>&copy; 2024 VGAG BUSINESS SUITE. All rights reserved.</p>
         </div>
     </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('a.submenu-muted').forEach(function (link) {
+                link.setAttribute('aria-disabled', 'true');
+                link.setAttribute('tabindex', '-1');
+                link.removeAttribute('href');
+            });
+        });
+    </script>
 </body>
 </html>

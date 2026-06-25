@@ -1,0 +1,97 @@
+% layout 'default';
+% title 'Slack Connect - Admin';
+% my $config = stash('config') // {};
+% my $requests = stash('requests') // [];
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Slack Connect Administration</h1>
+    <p style="margin-top: 12px;">Configure the Slack plugin shown to logged-in users and manage access requests.</p>
+
+    <div style="display: grid; grid-template-columns: minmax(320px, 420px) minmax(0, 1fr); gap: 24px; margin-top: 28px;">
+        <div style="border: 1px solid #ddd; border-radius: 12px; padding: 24px; background: #fff;">
+            <h2>Slack Workspace Settings</h2>
+            <form method="POST" action="/admin/slack/config" style="max-width: none; margin-top: 18px;">
+                <div class="form-group">
+                    <label for="workspace_name">Workspace Name</label>
+                    <input id="workspace_name" name="workspace_name" type="text" required value="<%= $config->{workspace_name} || '' %>">
+                </div>
+                <div class="form-group">
+                    <label for="workspace_url">Workspace URL</label>
+                    <input id="workspace_url" name="workspace_url" type="url" required value="<%= $config->{workspace_url} || '' %>">
+                </div>
+                <div class="form-group">
+                    <label for="invite_url">Invite URL</label>
+                    <input id="invite_url" name="invite_url" type="url" value="<%= $config->{invite_url} || '' %>">
+                </div>
+                <div class="form-group">
+                    <label for="channel_name">Default Channel Name</label>
+                    <input id="channel_name" name="channel_name" type="text" value="<%= $config->{channel_name} || '' %>">
+                </div>
+                <div class="form-group">
+                    <label for="channel_url">Default Channel URL</label>
+                    <input id="channel_url" name="channel_url" type="url" value="<%= $config->{channel_url} || '' %>">
+                </div>
+                <div class="form-group">
+                    <label for="help_text">Help Text</label>
+                    <textarea id="help_text" name="help_text"><%= $config->{help_text} || '' %></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Slack Settings</button>
+            </form>
+        </div>
+
+        <div style="border: 1px solid #ddd; border-radius: 12px; padding: 24px; background: #fff;">
+            <h2>Slack Access Requests</h2>
+            % if (@$requests) {
+                <div style="overflow-x: auto; margin-top: 16px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Slack Email</th>
+                                <th>Channel</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Requested</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            % for my $request (@$requests) {
+                                <tr>
+                                    <td>
+                                        <strong><%= $request->{full_name} %></strong><br>
+                                        <span style="color: #666;"><%= $request->{username} || $request->{email} %></span>
+                                    </td>
+                                    <td><%= $request->{slack_email} || $request->{email} %></td>
+                                    <td><%= $request->{preferred_channel} || '-' %></td>
+                                    <td><%= $request->{team_role} || '-' %></td>
+                                    <td><%= ucfirst $request->{status} %></td>
+                                    <td><%= $request->{created_at} %></td>
+                                    <td>
+                                        <form method="POST" action="/admin/slack/request/<%= $request->{id} %>/status" style="display: flex; gap: 8px; margin: 0; padding: 0; background: transparent; border: 0; max-width: none;">
+                                            <select name="status">
+                                                % for my $status (qw(requested invited connected blocked)) {
+                                                    <option value="<%= $status %>" <%= $request->{status} eq $status ? 'selected' : '' %>><%= ucfirst $status %></option>
+                                                % }
+                                            </select>
+                                            <button type="submit" class="btn btn-info">Update</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                % if ($request->{notes}) {
+                                    <tr>
+                                        <td colspan="7" style="background: #fafafa; color: #555;">
+                                            <strong>Notes:</strong> <%= $request->{notes} %>
+                                        </td>
+                                    </tr>
+                                % }
+                            % }
+                        </tbody>
+                    </table>
+                </div>
+            % } else {
+                <p style="margin-top: 16px; color: #666;">No Slack access requests yet.</p>
+            % }
+        </div>
+    </div>
+</div>

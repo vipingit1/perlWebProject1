@@ -1,6 +1,7 @@
 % layout 'default';
 % title $section_name;
 % my $section_products = stash('section_products') // [];
+% my $detail_form = stash('detail_form');
 
 <div class="container" style="margin: 60px auto;">
     <h1><%= $section_name %></h1>
@@ -22,6 +23,67 @@
         </div>
     % } else {
         <p style="margin-top: 24px;">No products available in this section yet.</p>
+    % }
+
+    % if ($detail_form) {
+        <div style="margin-top: 35px;">
+            <h2>Upload Files & Submit Detailed Form</h2>
+            <form method="POST" action="<%= $detail_form->{submit_url} %>" enctype="multipart/form-data" style="max-width: none; margin-top: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 16px;">
+                    <div class="form-group">
+                        <label for="full_name">Full Name</label>
+                        <input id="full_name" name="full_name" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="business_name">Business / Organization</label>
+                        <input id="business_name" name="business_name" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input id="phone" name="phone" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input id="subject" name="subject" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="project_type">Project Type</label>
+                        <select id="project_type" name="project_type">
+                            <option value="">Select</option>
+                            <option value="review">Review / Approval</option>
+                            <option value="operations">Operations</option>
+                            <option value="legal">Legal / Contract</option>
+                            <option value="marketing">Marketing / Branding</option>
+                            <option value="appointment">Appointment / Service Request</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeline">Timeline</label>
+                        <input id="timeline" name="timeline" type="text" placeholder="e.g. Immediate / 2 weeks / Q3">
+                    </div>
+                    <div class="form-group">
+                        <label for="budget">Budget / Commercial Notes</label>
+                        <input id="budget" name="budget" type="text">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="details">Detailed Requirements / Notes</label>
+                    <textarea id="details" name="details" required placeholder="Enter full details, expectations, scope, dependencies, questions, or appointment needs."></textarea>
+                </div>
+
+                <div class="form-group">
+                <label for="attachment"><%= $detail_form->{upload_label} // 'Upload Files' %></label>
+                <input id="attachment" name="attachment" type="file" accept="<%= $detail_form->{upload_accept} // '' %>">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit Details</button>
+            </form>
+        </div>
     % }
 
     <div style="margin-top: 30px;">
