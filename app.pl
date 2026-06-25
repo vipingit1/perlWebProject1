@@ -758,6 +758,57 @@ get '/shop/efbiwff-ngo-section8' => sub ($c) {
     );
 };
 
+get '/shop/vgag-partner-dance-studio-all-styles' => sub ($c) {
+    my @styles = (
+        { slug => 'salsa',   name => 'SALSA' },
+        { slug => 'bachata', name => 'BACHATA' },
+        { slug => 'tango',   name => 'TANGO' },
+        { slug => 'kizomba', name => 'KIZOMBA' },
+        { slug => 'cha-cha', name => 'CHA CHA' },
+        { slug => 'bolero',  name => 'BOLERO' },
+        { slug => 'swing',   name => 'SWING' },
+        { slug => 'waltz',   name => 'WALTZ' },
+        { slug => 'foxtrot', name => 'FOXTROT' },
+        { slug => 'merengue', name => 'MERENGUE' },
+        { slug => 'samba',   name => 'SAMBA' },
+        { slug => 'zouk',    name => 'ZOUK' },
+    );
+
+    $c->render(template => 'dance_styles',
+        section_name => 'VGAG PARTNER DANCE STUDIO ALL STYLES',
+        section_description => 'Explore partner dance classes across world-famous styles.',
+        styles => \@styles
+    );
+};
+
+get '/shop/vgag-partner-dance-studio-all-styles/:style' => sub ($c) {
+    my $style = $c->param('style') // '';
+
+    my %style_details = (
+        'salsa'    => { name => 'SALSA',    description => 'High-energy social partner dance with strong Latin rhythm and turn patterns.' },
+        'bachata'  => { name => 'BACHATA',  description => 'Romantic partner dance style from the Dominican Republic focused on musical connection.' },
+        'tango'    => { name => 'TANGO',    description => 'Expressive close-embrace partner dance with dramatic movement and precision.' },
+        'kizomba'  => { name => 'KIZOMBA',  description => 'Smooth partner dance known for grounded steps, flow, and close musical interpretation.' },
+        'cha-cha'  => { name => 'CHA CHA',  description => 'Playful Latin partner dance featuring quick footwork and sharp timing accents.' },
+        'bolero'   => { name => 'BOLERO',   description => 'Slow, lyrical partner dance emphasizing elegance, posture, and smooth transitions.' },
+        'swing'    => { name => 'SWING',    description => 'Upbeat partner dance family with bounce, spins, and social-friendly patterns.' },
+        'waltz'    => { name => 'WALTZ',    description => 'Classic ballroom partner dance in triple time known for rise-and-fall movement.' },
+        'foxtrot'  => { name => 'FOXTROT',  description => 'Elegant ballroom style with continuous gliding motion and smooth travel.' },
+        'merengue' => { name => 'MERENGUE', description => 'Accessible social partner dance with simple rhythm and fun rotational steps.' },
+        'samba'    => { name => 'SAMBA',    description => 'Dynamic Brazilian-influenced partner dance with bounce action and vibrant energy.' },
+        'zouk'     => { name => 'ZOUK',     description => 'Fluid contemporary partner dance known for body movement and musical creativity.' },
+    );
+
+    my $selected = $style_details{$style};
+    return $c->reply->not_found unless $selected;
+
+    $c->render(template => 'dance_style_detail',
+        section_name => 'VGAG PARTNER DANCE STUDIO ALL STYLES',
+        style_name => $selected->{name},
+        style_description => $selected->{description}
+    );
+};
+
 get '/shop/vgag-fresh-meals-prep-kit-delivery' => sub ($c) {
     $c->render(template => 'shop_section',
         section_name => 'VGAG Fresh Meals Prep Kit Delivery',

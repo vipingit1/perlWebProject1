@@ -1,0 +1,16 @@
+% layout 'default';
+% title $style_name;
+
+<div class="container" style="margin: 60px auto;">
+    <h1><%= $style_name %></h1>
+    <p style="margin-top: 12px;"><%= $style_description %></p>
+
+    <div style="margin-top: 25px; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9;">
+        <h3>Program Highlights</h3>
+        <p style="margin-top: 10px;">Beginner, intermediate, and advanced batches with partner rotation, musicality drills, and performance-focused coaching.</p>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <a href="/shop/vgag-partner-dance-studio-all-styles" class="btn btn-info">Back to All Dance Styles</a>
+    </div>
+</div>
