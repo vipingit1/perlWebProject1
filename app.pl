@@ -291,6 +291,45 @@ sub init_db {
         )
     });
 
+    $db->do(q{
+        CREATE TABLE IF NOT EXISTS partner_page_submissions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            partner_key TEXT NOT NULL,
+            section_key TEXT NOT NULL,
+            page_title TEXT NOT NULL,
+            full_name TEXT NOT NULL,
+            business_name TEXT,
+            email TEXT NOT NULL,
+            phone TEXT,
+            subject TEXT,
+            project_type TEXT,
+            timeline TEXT,
+            budget TEXT,
+            details TEXT,
+            file_path TEXT,
+            original_filename TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    });
+
+    $db->do(q{
+        CREATE TABLE IF NOT EXISTS slack_connection_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            full_name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT,
+            slack_email TEXT,
+            team_role TEXT,
+            preferred_channel TEXT,
+            notes TEXT,
+            status TEXT DEFAULT 'requested',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    });
+
     return $db;
 }
 
@@ -311,6 +350,58 @@ helper set_setting => sub ($c, $key, $value) {
         VALUES (?, ?, CURRENT_TIMESTAMP)
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
     }, undef, $key, $value // '');
+};
+
+helper slack_connect_config => sub ($c) {
+    return {
+        workspace_name => $c->get_setting('slack_workspace_name', 'VGAG BUSINESS SUITE'),
+        workspace_url => $c->get_setting('slack_workspace_url', 'https://app.slack.com/client'),
+        invite_url => $c->get_setting('slack_invite_url', ''),
+        channel_name => $c->get_setting('slack_channel_name', '#general'),
+        channel_url => $c->get_setting('slack_channel_url', ''),
+        help_text => $c->get_setting(
+            'slack_help_text',
+            'Use Slack to stay connected with the VGAG BUSINESS SUITE team for collaboration, updates, and delivery coordination.'
+        ),
+        download_url => 'https://slack.com/downloads',
+    };
+};
+
+helper partner_section_config => sub ($c, $section) {
+    my %sections = (
+        'website-demo' => { name => 'WEBSITE DEMO', description => 'Review the website demo and navigation flow for Sree Physio Therapists.' },
+        'brand-assets' => { name => 'BRAND ASSETS', description => 'Access approved logos, fonts, color palettes, and brand media resources.' },
+        'testimonials' => { name => 'TESTIMONIALS', description => 'Showcase client feedback, recovery stories, and partner success narratives.' },
+        'videos' => {
+            name => 'VIDEOS',
+            description => 'Upload demo videos, treatment walkthroughs, patient education clips, and branded media assets.',
+            upload_label => 'Upload Video Files',
+            upload_accept => 'video/*,.mp4,.mov,.avi,.mkv,.webm'
+        },
+        'products' => { name => 'PRODUCTS', description => 'Browse physiotherapy products, kits, and recommended treatment support items.' },
+        'team' => { name => 'TEAM', description => 'Meet therapists, support staff, and specialist care contributors.' },
+        'social-media-links' => { name => 'SOCIAL MEDIA LINKS', description => 'Find official social media channels, pages, and engagement handles.' },
+        'agreements' => { name => 'AGREEMENTS', description => 'Review legal agreements, partner contracts, and compliance documents.' },
+        'payment-terms' => { name => 'PAYMENT TERMS', description => 'Review billing cycles, accepted payment modes, invoicing terms, and settlement timelines.' },
+        'contract-terms' => { name => 'CONTRACT TERMS', description => 'Understand contract scope, tenure, obligations, renewals, and termination clauses.' },
+        'business-info' => { name => 'BUSINESS INFO (GST/MSME ETC)', description => 'Access business registration, GST details, MSME information, and statutory references.' },
+        'profit-sharing-agreement' => { name => 'PROFIT SHARING AGREEMENT', description => 'Review revenue-sharing structure, allocation rules, and partner payout terms.' },
+        'services' => { name => 'SERVICES', description => 'Explore physiotherapy and allied healthcare services offered by Sree Physio Therapists.' },
+        'book-an-appointment' => { name => 'BOOK AN APPOINTMENT', description => 'Schedule appointments for consultation, treatment plans, and therapy sessions.' },
+        'projects' => { name => 'PROJECTS', description => 'Track project scope, milestones, delivery planning, and implementation ownership.' },
+        'phase1' => { name => 'PHASE1', description => 'Manage first-phase planning, requirements capture, approvals, and foundational setup.' },
+        'phase2' => { name => 'PHASE2', description => 'Track second-phase execution, asset readiness, coordination tasks, and implementation progress.' },
+        'phase3' => { name => 'PHASE3', description => 'Finalize launch readiness, validation, go-live coordination, and post-launch action items.' },
+        'golive-date' => { name => 'GOLIVE DATE', description => 'Track launch milestones and final go-live readiness timelines.' },
+        'open-issues' => { name => 'OPEN ISSUES', description => 'Monitor pending items, blockers, and action points before release.' },
+        'workflow' => { name => 'WORKFLOW', description => 'Understand operational workflow from intake to therapy delivery and follow-up.' },
+        'shopify-store' => { name => 'SHOPIFY STORE', description => 'Plan Shopify storefront setup, catalog readiness, themes, integrations, and launch needs.' },
+        'whatsapp-catalogue' => { name => 'WHATSAPP CATALOGUE', description => 'Prepare WhatsApp catalogue structure, product listings, assets, and messaging content.' },
+        'whatsapp-business-api' => { name => 'WHATSAPP BUSINESS API', description => 'Track API onboarding, templates, provider setup, automations, and delivery workflows.' },
+        'meta-verified' => { name => 'META VERIFIED', description => 'Manage verification readiness, brand identity requirements, and account support needs.' },
+        'monetization' => { name => 'MONETIZATION', description => 'Review monetization channels, offers, packages, revenue flows, and scaling opportunities.' },
+    );
+    return $sections{$section};
 };
 
 hook before_dispatch => sub ($c) {
@@ -815,32 +906,86 @@ get '/shop/sree-physio-therapists' => sub ($c) {
 
 get '/shop/sree-physio-therapists/:section' => sub ($c) {
     my $section = $c->param('section') // '';
-    my %sections = (
-        'website-demo' => { name => 'WEBSITE DEMO', description => 'Review the website demo and navigation flow for Sree Physio Therapists.' },
-        'brand-assets' => { name => 'BRAND ASSETS', description => 'Access approved logos, fonts, color palettes, and brand media resources.' },
-        'testimonials' => { name => 'TESTIMONIALS', description => 'Showcase client feedback, recovery stories, and partner success narratives.' },
-        'products' => { name => 'PRODUCTS', description => 'Browse physiotherapy products, kits, and recommended treatment support items.' },
-        'team' => { name => 'TEAM', description => 'Meet therapists, support staff, and specialist care contributors.' },
-        'social-media-links' => { name => 'SOCIAL MEDIA LINKS', description => 'Find official social media channels, pages, and engagement handles.' },
-        'agreements' => { name => 'AGREEMENTS', description => 'Review legal agreements, partner contracts, and compliance documents.' },
-        'payment-terms' => { name => 'PAYMENT TERMS', description => 'Review billing cycles, accepted payment modes, invoicing terms, and settlement timelines.' },
-        'contract-terms' => { name => 'CONTRACT TERMS', description => 'Understand contract scope, tenure, obligations, renewals, and termination clauses.' },
-        'business-info' => { name => 'BUSINESS INFO (GST/MSME ETC)', description => 'Access business registration, GST details, MSME information, and statutory references.' },
-        'profit-sharing-agreement' => { name => 'PROFIT SHARING AGREEMENT', description => 'Review revenue-sharing structure, allocation rules, and partner payout terms.' },
-        'services' => { name => 'SERVICES', description => 'Explore physiotherapy and allied healthcare services offered by Sree Physio Therapists.' },
-        'book-an-appointment' => { name => 'BOOK AN APPOINTMENT', description => 'Schedule appointments for consultation, treatment plans, and therapy sessions.' },
-        'golive-date' => { name => 'GOLIVE DATE', description => 'Track launch milestones and final go-live readiness timelines.' },
-        'open-issues' => { name => 'OPEN ISSUES', description => 'Monitor pending items, blockers, and action points before release.' },
-        'workflow' => { name => 'WORKFLOW', description => 'Understand operational workflow from intake to therapy delivery and follow-up.' },
-    );
-
-    my $selected = $sections{$section};
+    my $selected = $c->partner_section_config($section);
     return $c->reply->not_found unless $selected;
 
     $c->render(template => 'shop_section',
         section_name => $selected->{name},
-        section_description => $selected->{description}
+        section_description => $selected->{description},
+        detail_form => {
+            submit_url => "/shop/sree-physio-therapists/$section/submit",
+            section_key => $section,
+            partner_key => 'sree-physio-therapists',
+            upload_label => $selected->{upload_label} // 'Upload Files',
+            upload_accept => $selected->{upload_accept} // '',
+        }
     );
+};
+
+post '/shop/sree-physio-therapists/:section/submit' => sub ($c) {
+    my $section = $c->param('section') // '';
+    my $selected = $c->partner_section_config($section);
+    return $c->reply->not_found unless $selected;
+
+    my $full_name = $c->param('full_name') // '';
+    my $email = $c->param('email') // '';
+    my $business_name = $c->param('business_name') // '';
+    my $phone = $c->param('phone') // '';
+    my $subject = $c->param('subject') // '';
+    my $project_type = $c->param('project_type') // '';
+    my $timeline = $c->param('timeline') // '';
+    my $budget = $c->param('budget') // '';
+    my $details = $c->param('details') // '';
+
+    unless ($full_name && $email && $details) {
+        $c->flash(error => 'Full name, email, and details are required.');
+        return $c->redirect_to("/shop/sree-physio-therapists/$section");
+    }
+
+    my $stored_relative_path = '';
+    my $original_filename = '';
+    if (my $upload = $c->req->upload('attachment')) {
+        $original_filename = $upload->filename // '';
+        if ($original_filename) {
+            if (($section eq 'videos') && (($upload->headers->content_type // '') !~ m{^video/}i) && ($original_filename !~ /\.(mp4|mov|avi|mkv|webm)$/i)) {
+                $c->flash(error => 'Please upload a valid video file.');
+                return $c->redirect_to("/shop/sree-physio-therapists/$section");
+            }
+            my $safe_name = $original_filename;
+            $safe_name =~ s{[^A-Za-z0-9._-]}{_}g;
+            my $upload_dir = File::Spec->catdir('.', 'public', 'uploads', 'sree-physio-therapists', $section);
+            make_path($upload_dir) unless -d $upload_dir;
+            my $stored_name = time . '-' . $safe_name;
+            my $target = File::Spec->catfile($upload_dir, $stored_name);
+            $upload->move_to($target);
+            $stored_relative_path = '/uploads/sree-physio-therapists/' . $section . '/' . $stored_name;
+        }
+    }
+
+    $db->do(q{
+        INSERT INTO partner_page_submissions (
+            partner_key, section_key, page_title, full_name, business_name, email, phone,
+            subject, project_type, timeline, budget, details, file_path, original_filename
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    }, undef,
+        'sree-physio-therapists',
+        $section,
+        $selected->{name},
+        $full_name,
+        $business_name,
+        $email,
+        $phone,
+        $subject,
+        $project_type,
+        $timeline,
+        $budget,
+        $details,
+        $stored_relative_path,
+        $original_filename
+    );
+
+    $c->flash(success => 'Your details and files were submitted successfully.');
+    $c->redirect_to("/shop/sree-physio-therapists/$section");
 };
 
 get '/shop/vendors' => sub ($c) {
@@ -871,6 +1016,34 @@ get '/shop/news' => sub ($c) {
     );
 };
 
+get '/shop/trends-suggestions' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'TRENDS/SUGGESTIONS',
+        section_description => 'Capture market trends, growth suggestions, improvement ideas, and strategic recommendations for the business suite.'
+    );
+};
+
+get '/shop/delivery-shipping' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'DELIVERY/SHIPPING',
+        section_description => 'Track delivery workflows, shipping coverage, fulfillment readiness, dispatch coordination, and customer delivery expectations.'
+    );
+};
+
+get '/shop/sales-invoices' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'SALES AND INVOICES',
+        section_description => 'Review sales operations, invoice planning, billing coordination, collections visibility, and customer commercial records.'
+    );
+};
+
+get '/shop/reports-profit-loss' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'REPORTS/PROFIT LOSS',
+        section_description => 'Access reporting focus areas for profitability, margins, business performance, revenue insights, and operational profit-loss tracking.'
+    );
+};
+
 get '/shop/affiliates' => sub ($c) {
     $c->render(template => 'shop_section',
         section_name => 'AFFILIATES',
@@ -883,6 +1056,62 @@ get '/shop/franchise' => sub ($c) {
         section_name => 'FRANCHISE',
         section_description => 'Discover franchise opportunities with structured onboarding, support, and scalable business models.'
     );
+};
+
+get '/slack/connect' => sub ($c) {
+    $c->require_auth or return;
+
+    my $user = $c->get_session_user;
+    my $config = $c->slack_connect_config;
+    my @requests = @{ $db->selectall_arrayref(q{
+        SELECT *
+        FROM slack_connection_requests
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 10
+    }, { Slice => {} }, $user->{id}) };
+
+    $c->render(template => 'slack_connect',
+        user => $user,
+        config => $config,
+        requests => \@requests
+    );
+};
+
+post '/slack/connect' => sub ($c) {
+    $c->require_auth or return;
+
+    my $user = $c->get_session_user;
+    my $full_name = $c->param('full_name') // ($user->{full_name} || $user->{username} || '');
+    my $email = $c->param('email') // ($user->{email} || '');
+    my $phone = $c->param('phone') // ($user->{phone} || '');
+    my $slack_email = $c->param('slack_email') // '';
+    my $team_role = $c->param('team_role') // '';
+    my $preferred_channel = $c->param('preferred_channel') // '';
+    my $notes = $c->param('notes') // '';
+
+    unless ($full_name && $email && $email =~ /\@/ && $notes) {
+        $c->flash(error => 'Full name, a valid email, and connection notes are required.');
+        return $c->redirect_to('/slack/connect');
+    }
+
+    $db->do(q{
+        INSERT INTO slack_connection_requests (
+            user_id, full_name, email, phone, slack_email, team_role, preferred_channel, notes, status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'requested', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    }, undef,
+        $user->{id},
+        $full_name,
+        $email,
+        $phone,
+        $slack_email,
+        $team_role,
+        $preferred_channel,
+        $notes
+    );
+
+    $c->flash(success => 'Slack connection request submitted.');
+    $c->redirect_to('/slack/connect');
 };
 
 get '/shop/efbiwff-ngo-section8' => sub ($c) {
@@ -1975,6 +2204,80 @@ post '/admin/shiprocket/login' => sub ($c) {
     }
     
     $c->redirect_to('/admin/shiprocket');
+};
+
+get '/admin/slack' => sub ($c) {
+    $c->require_roles(qw(admin manager support)) or return;
+
+    my $config = $c->slack_connect_config;
+    my @requests = @{ $db->selectall_arrayref(q{
+        SELECT scr.*, u.username
+        FROM slack_connection_requests scr
+        LEFT JOIN users u ON u.id = scr.user_id
+        ORDER BY scr.created_at DESC
+        LIMIT 100
+    }, { Slice => {} }) };
+
+    $c->render(template => 'admin_slack',
+        config => $config,
+        requests => \@requests
+    );
+};
+
+post '/admin/slack/config' => sub ($c) {
+    $c->require_roles(qw(admin manager)) or return;
+
+    my $workspace_name = $c->param('workspace_name') // '';
+    my $workspace_url = $c->param('workspace_url') // '';
+    my $invite_url = $c->param('invite_url') // '';
+    my $channel_name = $c->param('channel_name') // '';
+    my $channel_url = $c->param('channel_url') // '';
+    my $help_text = $c->param('help_text') // '';
+
+    unless ($workspace_name && $workspace_url =~ m{^https?://}) {
+        $c->flash(error => 'Workspace name and a valid workspace URL are required.');
+        return $c->redirect_to('/admin/slack');
+    }
+
+    for my $optional_url ($invite_url, $channel_url) {
+        next unless $optional_url;
+        unless ($optional_url =~ m{^https?://}) {
+            $c->flash(error => 'Invite and channel URLs must start with http:// or https://');
+            return $c->redirect_to('/admin/slack');
+        }
+    }
+
+    $c->set_setting('slack_workspace_name', $workspace_name);
+    $c->set_setting('slack_workspace_url', $workspace_url);
+    $c->set_setting('slack_invite_url', $invite_url);
+    $c->set_setting('slack_channel_name', $channel_name);
+    $c->set_setting('slack_channel_url', $channel_url);
+    $c->set_setting('slack_help_text', $help_text);
+
+    $c->flash(success => 'Slack Connect settings saved.');
+    $c->redirect_to('/admin/slack');
+};
+
+post '/admin/slack/request/:id/status' => sub ($c) {
+    $c->require_roles(qw(admin manager support)) or return;
+
+    my $id = $c->param('id');
+    my $status = lc($c->param('status') // '');
+    my %allowed = map { $_ => 1 } qw(requested invited connected blocked);
+    unless ($allowed{$status}) {
+        $c->flash(error => 'Invalid Slack request status.');
+        return $c->redirect_to('/admin/slack');
+    }
+
+    $db->do(
+        'UPDATE slack_connection_requests SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        undef,
+        $status,
+        $id
+    );
+
+    $c->flash(success => 'Slack request status updated.');
+    $c->redirect_to('/admin/slack');
 };
 
 post '/admin/order/:id/create-shipment' => sub ($c) {
