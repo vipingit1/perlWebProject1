@@ -120,10 +120,28 @@ sub init_db {
             city TEXT,
             postal_code TEXT,
             is_admin INTEGER DEFAULT 0,
+            role TEXT DEFAULT 'customer',
+            is_active INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     });
+
+    my %user_columns = map { $_->{name} => 1 } @{ $db->selectall_arrayref('PRAGMA table_info(users)', { Slice => {} }) };
+    my @user_alters = (
+        [role => "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'customer'"],
+        [is_active => "ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1"],
+    );
+    for my $alter (@user_alters) {
+        my ($column, $statement) = @$alter;
+        next if $user_columns{$column};
+        eval { $db->do($statement) };
+        if ($@) {
+            die $@ unless $@ =~ /duplicate column name/i;
+        }
+    }
+    $db->do("UPDATE users SET role = 'admin' WHERE is_admin = 1 AND (role IS NULL OR role = '' OR role = 'customer')");
+    $db->do("UPDATE users SET role = 'customer' WHERE role IS NULL OR role = ''");
 
     # Products table
     $db->do(q{
@@ -664,21 +682,51 @@ helper get_session_user => sub ($c) {
     return $stmt->fetchrow_hashref;
 };
 
+helper normalize_role => sub ($c, $role) {
+    my %allowed = map { $_ => 1 } qw(admin manager editor support customer);
+    my $normalized = lc($role // 'customer');
+    return $allowed{$normalized} ? $normalized : 'customer';
+};
+
+helper user_role => sub ($c, $user) {
+    return 'customer' unless $user;
+    return 'admin' if $user->{is_admin};
+    return $c->normalize_role($user->{role});
+};
+
+helper has_access => sub ($c, $user, @roles) {
+    return 0 unless $user;
+    my $current_role = $c->user_role($user);
+    my %allowed = map { $c->normalize_role($_) => 1 } @roles;
+    return $allowed{$current_role} ? 1 : 0;
+};
+
 helper require_auth => sub ($c) {
     unless ($c->session('user_id')) {
+        $c->redirect_to('/login');
+        return 0;
+    }
+    my $user = $c->get_session_user;
+    unless ($user && ($user->{is_active} // 1)) {
+        delete $c->session->{user_id};
+        $c->flash(error => 'Account is inactive. Contact administrator.');
         $c->redirect_to('/login');
         return 0;
     }
     return 1;
 };
 
-helper require_admin => sub ($c) {
+helper require_roles => sub ($c, @roles) {
     my $user = $c->get_session_user;
-    unless ($user && $user->{is_admin}) {
+    unless ($user && ($user->{is_active} // 1) && $c->has_access($user, @roles)) {
         $c->render(text => 'Unauthorized', status => 403);
         return 0;
     }
     return 1;
+};
+
+helper require_admin => sub ($c) {
+    return $c->require_roles('admin');
 };
 
 # Public Routes
@@ -748,6 +796,86 @@ get '/shop/vgag-business-solutions' => sub ($c) {
     $c->render(template => 'shop_section',
         section_name => 'VGAG BUSINESS SOLUTIONS',
         section_description => 'Discover consulting, execution, and enterprise support services from VGAG BUSINESS SOLUTIONS.'
+    );
+};
+
+get '/shop/business-partners' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'BUSINESS PARTNERS',
+        section_description => 'Connect with trusted business partners for strategic alliances, collaborations, and growth opportunities.'
+    );
+};
+
+get '/shop/sree-physio-therapists' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'SREE PHYSIO THERAPISTS',
+        section_description => 'Access physiotherapy partner services covering rehabilitation, pain management, mobility care, and wellness programs.'
+    );
+};
+
+get '/shop/sree-physio-therapists/:section' => sub ($c) {
+    my $section = $c->param('section') // '';
+    my %sections = (
+        'website-demo' => { name => 'WEBSITE DEMO', description => 'Review the website demo and navigation flow for Sree Physio Therapists.' },
+        'brand-assets' => { name => 'BRAND ASSETS', description => 'Access approved logos, fonts, color palettes, and brand media resources.' },
+        'testimonials' => { name => 'TESTIMONIALS', description => 'Showcase client feedback, recovery stories, and partner success narratives.' },
+        'products' => { name => 'PRODUCTS', description => 'Browse physiotherapy products, kits, and recommended treatment support items.' },
+        'team' => { name => 'TEAM', description => 'Meet therapists, support staff, and specialist care contributors.' },
+        'social-media-links' => { name => 'SOCIAL MEDIA LINKS', description => 'Find official social media channels, pages, and engagement handles.' },
+        'agreements' => { name => 'AGREEMENTS', description => 'Review legal agreements, partner contracts, and compliance documents.' },
+        'golive-date' => { name => 'GOLIVE DATE', description => 'Track launch milestones and final go-live readiness timelines.' },
+        'open-issues' => { name => 'OPEN ISSUES', description => 'Monitor pending items, blockers, and action points before release.' },
+        'workflow' => { name => 'WORKFLOW', description => 'Understand operational workflow from intake to therapy delivery and follow-up.' },
+    );
+
+    my $selected = $sections{$section};
+    return $c->reply->not_found unless $selected;
+
+    $c->render(template => 'shop_section',
+        section_name => $selected->{name},
+        section_description => $selected->{description}
+    );
+};
+
+get '/shop/vendors' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'VENDORS',
+        section_description => 'Engage with verified vendors for procurement, distribution, and operational collaboration.'
+    );
+};
+
+get '/shop/suppliers' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'SUPPLIERS',
+        section_description => 'Explore supplier network opportunities for sourcing, fulfillment, and scalable supply operations.'
+    );
+};
+
+get '/shop/auditors' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'AUDITORS',
+        section_description => 'Connect with audit partners for compliance, assurance, process review, and governance support.'
+    );
+};
+
+get '/shop/news' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'NEWS',
+        section_description => 'Stay updated with latest announcements, updates, and ecosystem developments.'
+    );
+};
+
+get '/shop/affiliates' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'AFFILIATES',
+        section_description => 'Join affiliate growth programs for referral partnerships and collaborative market expansion.'
+    );
+};
+
+get '/shop/franchise' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'FRANCHISE',
+        section_description => 'Discover franchise opportunities with structured onboarding, support, and scalable business models.'
     );
 };
 
@@ -904,9 +1032,9 @@ post '/register' => sub ($c) {
     
     eval {
         my $stmt = $db->prepare(
-            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)'
+            'INSERT INTO users (username, email, password, role, is_active) VALUES (?, ?, ?, ?, ?)'
         );
-        $stmt->execute($username, $email, $hashed_pwd);
+        $stmt->execute($username, $email, $hashed_pwd, 'customer', 1);
     };
     
     if ($@) {
@@ -927,12 +1055,15 @@ post '/login' => sub ($c) {
     my $password = $c->param('password');
     
     my $hashed_pwd = sha256_hex($password);
-    my $stmt = $db->prepare('SELECT id FROM users WHERE username = ? AND password = ?');
+    my $stmt = $db->prepare('SELECT id, is_active FROM users WHERE username = ? AND password = ?');
     $stmt->execute($username, $hashed_pwd);
     my $user = $stmt->fetchrow_hashref;
     
     unless ($user) {
         return $c->render(template => 'login', error => 'Invalid credentials');
+    }
+    unless ($user->{is_active}) {
+        return $c->render(template => 'login', error => 'Account disabled. Contact administrator.');
     }
     
     $c->session(user_id => $user->{id});
@@ -1414,7 +1545,7 @@ get '/invoice/:id' => sub ($c) {
     my $order = $order_stmt->fetchrow_hashref;
     return $c->render(text => 'Invoice not found', status => 404) unless $order;
 
-    unless ($user->{is_admin} || $order->{user_id} == $user->{id}) {
+    unless ($c->has_access($user, qw(admin manager support)) || $order->{user_id} == $user->{id}) {
         return $c->render(text => 'Unauthorized', status => 403);
     }
 
@@ -1454,7 +1585,7 @@ get '/invoice/:id' => sub ($c) {
 
 # Admin dashboard
 get '/admin' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager editor support)) or return;
     
     my $product_count = $db->selectrow_array('SELECT COUNT(*) FROM products');
     my $order_count = $db->selectrow_array('SELECT COUNT(*) FROM orders');
@@ -1468,8 +1599,55 @@ get '/admin' => sub ($c) {
     );
 };
 
-get '/admin/reels' => sub ($c) {
+get '/admin/users' => sub ($c) {
     $c->require_admin or return;
+
+    my @users = @{ $db->selectall_arrayref(q{
+        SELECT id, username, email, role, is_admin, is_active, created_at
+        FROM users
+        ORDER BY id ASC
+    }, { Slice => {} }) };
+
+    $c->render(template => 'admin_users', users => \@users);
+};
+
+post '/admin/user/:id/role' => sub ($c) {
+    $c->require_admin or return;
+
+    my $id = $c->param('id');
+    my $role = $c->normalize_role($c->param('role'));
+    my $target = $db->selectrow_hashref('SELECT id, is_admin FROM users WHERE id = ?', undef, $id);
+    return $c->render(text => 'User not found', status => 404) unless $target;
+
+    if ($target->{is_admin}) {
+        $role = 'admin';
+    }
+
+    $db->do('UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', undef, $role, $id);
+    $c->flash(success => 'User role updated');
+    $c->redirect_to('/admin/users');
+};
+
+post '/admin/user/:id/access' => sub ($c) {
+    $c->require_admin or return;
+
+    my $id = $c->param('id');
+    my $is_active = ($c->param('is_active') // 0) ? 1 : 0;
+    my $target = $db->selectrow_hashref('SELECT id, is_admin FROM users WHERE id = ?', undef, $id);
+    return $c->render(text => 'User not found', status => 404) unless $target;
+
+    if ($target->{is_admin} && !$is_active) {
+        $c->flash(error => 'Admin account cannot be disabled');
+        return $c->redirect_to('/admin/users');
+    }
+
+    $db->do('UPDATE users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', undef, $is_active, $id);
+    $c->flash(success => 'User access updated');
+    $c->redirect_to('/admin/users');
+};
+
+get '/admin/reels' => sub ($c) {
+    $c->require_roles(qw(admin editor)) or return;
 
     my @products = @{ $db->selectall_arrayref(
         'SELECT id, name, category, image_url FROM products ORDER BY id DESC LIMIT 100',
@@ -1495,7 +1673,7 @@ get '/admin/reels' => sub ($c) {
 };
 
 post '/admin/reels/config' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin editor)) or return;
 
     my $public_base_url = $c->param('public_base_url') // '';
     my $ig_user_id = $c->param('ig_user_id') // '';
@@ -1517,7 +1695,7 @@ post '/admin/reels/config' => sub ($c) {
 };
 
 post '/admin/reels/run/:product_id' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin editor)) or return;
 
     my $product_id = $c->param('product_id');
     my $caption = $c->param('caption') // '';
@@ -1570,7 +1748,7 @@ post '/admin/reels/run/:product_id' => sub ($c) {
 
 # Manage products
 get '/admin/products' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager editor)) or return;
     
     my @products = ();
     my $stmt = $db->prepare('SELECT * FROM products');
@@ -1584,13 +1762,13 @@ get '/admin/products' => sub ($c) {
 
 # Add product form
 get '/admin/product/add' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager editor)) or return;
     $c->render(template => 'admin_product_form');
 };
 
 # Add product
 post '/admin/product' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager editor)) or return;
     
     my $name = $c->param('name');
     my $description = $c->param('description');
@@ -1612,7 +1790,7 @@ post '/admin/product' => sub ($c) {
 
 # Edit product
 get '/admin/product/:id/edit' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager editor)) or return;
     
     my $id = $c->param('id');
     my $stmt = $db->prepare('SELECT * FROM products WHERE id = ?');
@@ -1624,7 +1802,7 @@ get '/admin/product/:id/edit' => sub ($c) {
 
 # Update product
 post '/admin/product/:id' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager editor)) or return;
     
     my $id = $c->param('id');
     my $name = $c->param('name');
@@ -1647,7 +1825,7 @@ post '/admin/product/:id' => sub ($c) {
 
 # Delete product
 post '/admin/product/:id/delete' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager editor)) or return;
     
     my $id = $c->param('id');
     $db->do('DELETE FROM products WHERE id = ?', undef, $id);
@@ -1657,7 +1835,7 @@ post '/admin/product/:id/delete' => sub ($c) {
 
 # Manage orders
 get '/admin/orders' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager support)) or return;
     
     my @orders = ();
     my $stmt = $db->prepare(q{
@@ -1676,7 +1854,7 @@ get '/admin/orders' => sub ($c) {
 
 # Sales and GST reports
 get '/admin/reports' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager)) or return;
 
     my @paid_orders = @{ $db->selectall_arrayref(q{
         SELECT id, total_price, currency, created_at
@@ -1753,7 +1931,7 @@ get '/admin/reports' => sub ($c) {
 
 # Update order status
 post '/admin/order/:id/status' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager support)) or return;
     
     my $id = $c->param('id');
     my $status = $c->param('status');
@@ -1765,7 +1943,7 @@ post '/admin/order/:id/status' => sub ($c) {
 
 # Shiprocket Admin Settings
 get '/admin/shiprocket' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager)) or return;
     
     my $token = $c->shiprocket_auth_token;
     my $customer_id = $c->get_setting('shiprocket_customer_id', '');
@@ -1777,7 +1955,7 @@ get '/admin/shiprocket' => sub ($c) {
 };
 
 post '/admin/shiprocket/login' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager)) or return;
     
     my $email = $c->param('email') // '';
     my $password = $c->param('password') // '';
@@ -1794,7 +1972,7 @@ post '/admin/shiprocket/login' => sub ($c) {
 };
 
 post '/admin/order/:id/create-shipment' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager support)) or return;
     
     my $order_id = $c->param('id');
     my $result = $c->shiprocket_create_shipment($order_id);
@@ -1810,7 +1988,7 @@ post '/admin/order/:id/create-shipment' => sub ($c) {
 };
 
 get '/admin/order/:id/tracking' => sub ($c) {
-    $c->require_admin or return;
+    $c->require_roles(qw(admin manager support)) or return;
     
     my $order_id = $c->param('id');
     my $order = $db->selectrow_hashref('SELECT * FROM orders WHERE id = ?', undef, $order_id);

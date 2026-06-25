@@ -83,14 +83,33 @@
             display: block;
             margin: 6px 0 2px;
             padding: 8px 14px;
-            color: #9ec5ff;
+            color: #fbbf24;
             font-weight: 600;
             border-top: 1px solid #3a3a3a;
         }
 
         .submenu-child {
-            padding-left: 28px !important;
+            padding-left: 14px !important;
+            padding-right: 14px !important;
+            text-align: right;
             font-size: 0.95em;
+            color: #7dd3fc !important;
+            background: #1b2a3a;
+            border-left: 3px solid #38bdf8;
+            border-radius: 4px;
+            margin: 2px 8px;
+            font-weight: 600;
+        }
+
+        .submenu-child::before {
+            content: "➜ ";
+            color: #facc15;
+            font-weight: 700;
+        }
+
+        .submenu-child:hover {
+            background: #24384f !important;
+            color: #fde68a !important;
         }
 
         .nav-item:hover .submenu {
@@ -284,6 +303,8 @@
     % my $lang = $c->current_language;
     % my $currency = $c->current_currency;
     % my $current_path = $c->req->url->path->to_string;
+    % my $session_user = $c->get_session_user;
+    % my $can_access_admin = $session_user && $c->has_access($session_user, qw(admin manager editor support));
     <!-- Navigation -->
     <nav>
         <div class="container">
@@ -291,6 +312,28 @@
             <div class="nav-right">
                 <a href="/"><%= $c->t('home') %></a>
                 <a href="/products"><%= $c->t('products') %></a>
+                <div class="nav-item">
+                    <a href="/shop/business-partners">Business Partners</a>
+                    <div class="submenu">
+                        <a class="submenu-child" href="/shop/sree-physio-therapists">Sree Physio Therapists</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/website-demo">Website Demo</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/brand-assets">Brand Assets</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/testimonials">Testimonials</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/products">Products</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/team">Team</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/social-media-links">Social Media Links</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/agreements">Agreements</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/golive-date">GoLive Date</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/open-issues">Open Issues</a>
+                        <a class="submenu-child" href="/shop/sree-physio-therapists/workflow">Workflow</a>
+                    </div>
+                </div>
+                <a href="/shop/vendors">Vendors</a>
+                <a href="/shop/suppliers">Suppliers</a>
+                <a href="/shop/auditors">Auditors</a>
+                <a href="/shop/news">News</a>
+                <a href="/shop/affiliates">Affiliates</a>
+                <a href="/shop/franchise">Franchise</a>
                 <div class="nav-item">
                     <a href="/about">Info</a>
                     <div class="submenu">
@@ -308,7 +351,6 @@
                         <a href="/shop/vgag-business-solutions">VGAG BUSINESS SOLUTIONS</a>
                         <a href="/shop/efbiwff-ngo-section8">EFBIWFF (NGO/SECTION8)</a>
                         <a href="/shop/vgag-partner-dance-studio-all-styles">VGAG PARTNER DANCE STUDIO ALL STYLES</a>
-                        <span class="submenu-heading">DANCE STYLE SUBMENUS</span>
                         <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/salsa">SALSA</a>
                         <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/salsa-rueda">SALSA RUEDA</a>
                         <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/casino-rueda">CASINO RUEDA</a>
@@ -328,6 +370,9 @@
                 </div>
                 % if (session('user_id')) {
                     <a href="/cart"><%= $c->t('cart') %></a>
+                    % if ($can_access_admin) {
+                        <a href="/admin">Admin</a>
+                    % }
                     <a href="/logout"><%= $c->t('logout') %></a>
                 % } else {
                     <a href="/login"><%= $c->t('login') %></a>

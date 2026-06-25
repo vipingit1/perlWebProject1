@@ -1,0 +1,54 @@
+% layout 'default';
+% title 'Manage Users';
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Manage Users & Access</h1>
+
+    <table style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Role Update</th>
+                <th>Access Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            % foreach my $user (@$users) {
+                % my $effective_role = $user->{is_admin} ? 'admin' : ($user->{role} // 'customer');
+                <tr>
+                    <td><%= $user->{id} %></td>
+                    <td><%= $user->{username} %></td>
+                    <td><%= $user->{email} %></td>
+                    <td><%= uc($effective_role) %></td>
+                    <td><%= $user->{is_active} ? 'ACTIVE' : 'DISABLED' %></td>
+                    <td><%= $user->{created_at} %></td>
+                    <td>
+                        <form method="POST" action="/admin/user/<%= $user->{id} %>/role" style="display: flex; gap: 8px; margin: 0; padding: 0; background: transparent; border: 0; max-width: none;">
+                            <select name="role">
+                                % my @roles = qw(admin manager editor support customer);
+                                % foreach my $role (@roles) {
+                                    <option value="<%= $role %>" <%= $role eq $effective_role ? 'selected' : '' %>><%= uc($role) %></option>
+                                % }
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/admin/user/<%= $user->{id} %>/access" style="display: flex; gap: 8px; margin: 0; padding: 0; background: transparent; border: 0; max-width: none;">
+                            <select name="is_active">
+                                <option value="1" <%= $user->{is_active} ? 'selected' : '' %>>ACTIVE</option>
+                                <option value="0" <%= $user->{is_active} ? '' : 'selected' %>>DISABLED</option>
+                            </select>
+                            <button type="submit" class="btn btn-info btn-sm">Update</button>
+                        </form>
+                    </td>
+                </tr>
+            % }
+        </tbody>
+    </table>
+</div>

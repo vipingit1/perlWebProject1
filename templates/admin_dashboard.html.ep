@@ -29,5 +29,6 @@
         <a href="/admin/reports" class="btn btn-primary">GST & Sales Reports</a>
         <a href="/admin/reels" class="btn btn-info">Meta Reels Automation</a>
         <a href="/admin/shiprocket" class="btn btn-success">Shiprocket Shipping</a>
+        <a href="/admin/users" class="btn btn-primary">Manage Users & Access</a>
     </div>
 </div>
