@@ -26,6 +26,7 @@
     <div style="margin-top: 30px;">
         <a href="/admin/products" class="btn btn-primary">Manage Products</a>
         <a href="/admin/orders" class="btn btn-info">Manage Orders</a>
+        <a href="/admin/partner-uploads" class="btn btn-success">Partner Uploads</a>
         <a href="/admin/reports" class="btn btn-primary">GST & Sales Reports</a>
         <a href="/admin/reels" class="btn btn-info">Meta Reels Automation</a>
         <a href="/admin/shiprocket" class="btn btn-success">Shiprocket Shipping</a>

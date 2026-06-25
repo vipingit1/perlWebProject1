@@ -1,0 +1,84 @@
+% layout 'default';
+% title 'Partner Uploads';
+% my $submissions = stash('submissions') // [];
+
+<div class="container" style="margin: 60px auto;">
+    <h1>Partner Uploads</h1>
+    <p style="margin-top: 12px;">View submitted partner forms and download uploaded photos, videos, and files.</p>
+
+    % if (@$submissions) {
+        <div style="display: grid; gap: 18px; margin-top: 28px;">
+            % for my $submission (@$submissions) {
+                <div style="border: 1px solid #ddd; border-radius: 10px; padding: 20px; background: #fff;">
+                    <div style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                        <div>
+                            <h3 style="margin: 0 0 8px;"><%= $submission->{page_title} %></h3>
+                            <p style="margin: 0; color: #666;">
+                                <strong><%= $submission->{full_name} %></strong>
+                                <% if ($submission->{business_name}) { %> - <%= $submission->{business_name} %><% } %>
+                            </p>
+                            <p style="margin: 6px 0 0; color: #666;">
+                                <%= $submission->{email} %>
+                                <% if ($submission->{phone}) { %> | <%= $submission->{phone} %><% } %>
+                            </p>
+                        </div>
+                        <div style="color: #666; text-align: right;">
+                            <div><strong>Section:</strong> <%= $submission->{section_key} %></div>
+                            <div><strong>Submitted:</strong> <%= $submission->{created_at} %></div>
+                        </div>
+                    </div>
+
+                    % if ($submission->{subject} || $submission->{project_type} || $submission->{timeline} || $submission->{budget}) {
+                        <div style="margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                            % if ($submission->{subject}) {
+                                <div><strong>Subject:</strong> <%= $submission->{subject} %></div>
+                            % }
+                            % if ($submission->{project_type}) {
+                                <div><strong>Project Type:</strong> <%= $submission->{project_type} %></div>
+                            % }
+                            % if ($submission->{timeline}) {
+                                <div><strong>Timeline:</strong> <%= $submission->{timeline} %></div>
+                            % }
+                            % if ($submission->{budget}) {
+                                <div><strong>Budget:</strong> <%= $submission->{budget} %></div>
+                            % }
+                        </div>
+                    % }
+
+                    <div style="margin-top: 14px;">
+                        <strong>Details:</strong>
+                        <p style="margin-top: 6px; white-space: pre-wrap; color: #444;"><%= $submission->{details} %></p>
+                    </div>
+
+                    <div style="margin-top: 14px;">
+                        <strong>Uploaded Files:</strong>
+                        % if (@{ $submission->{files} || [] }) {
+                            <div style="display: grid; gap: 10px; margin-top: 10px;">
+                                % for my $file (@{ $submission->{files} }) {
+                                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fafafa;">
+                                        <div>
+                                            <div><strong><%= $file->{original_filename} || 'Uploaded file' %></strong></div>
+                                            % if ($file->{content_type}) {
+                                                <div style="color: #666; font-size: 0.95em;"><%= $file->{content_type} %></div>
+                                            % }
+                                        </div>
+                                        % if ($file->{file_path}) {
+                                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                                <a href="<%= $file->{file_path} %>" class="btn btn-info" target="_blank" rel="noopener">Open</a>
+                                                <a href="<%= $file->{file_path} %>" class="btn btn-primary" download>Download</a>
+                                            </div>
+                                        % }
+                                    </div>
+                                % }
+                            </div>
+                        % } else {
+                            <p style="margin-top: 8px; color: #666;">No files uploaded with this submission.</p>
+                        % }
+                    </div>
+                </div>
+            % }
+        </div>
+    % } else {
+        <p style="margin-top: 24px;">No partner uploads have been submitted yet.</p>
+    % }
+</div>
