@@ -337,21 +337,20 @@
     % my $session_user = $c->get_session_user;
     % my $can_access_admin = $session_user && $c->has_access($session_user, qw(admin manager editor support));
     % my $is_demo_user = $session_user && lc(($session_user->{username} // '')) eq 'demo';
+    % my $demo_muted = $is_demo_user ? 'submenu-muted' : '';
     <!-- Navigation -->
     <nav>
         <div class="container">
             <div class="logo">🛒 VGAG BUSINESS SUITE</div>
             <div class="nav-right">
-                <a href="/"><%= $c->t('home') %></a>
-                % unless ($is_demo_user) {
-                    <a href="/products"><%= $c->t('products') %></a>
-                % }
+                <a class="<%= $demo_muted %>" href="/"><%= $c->t('home') %></a>
+                <a class="<%= $demo_muted %>" href="/products"><%= $c->t('products') %></a>
                 <div class="nav-auth">
                     % if (session('user_id')) {
-                        <a href="/slack/connect">Slack Connect</a>
-                        <a href="/cart"><%= $c->t('cart') %></a>
+                        <a class="<%= $demo_muted %>" href="/slack/connect">Slack Connect</a>
+                        <a class="<%= $demo_muted %>" href="/cart"><%= $c->t('cart') %></a>
                         % if ($can_access_admin) {
-                            <a href="/admin">Admin</a>
+                            <a class="<%= $demo_muted %>" href="/admin">Admin</a>
                         % }
                         <a href="/logout"><%= $c->t('logout') %></a>
                     % } else {
@@ -391,51 +390,49 @@
                         <a class="submenu-child submenu-muted" href="/shop/sree-physio-therapists/monetization">Monetization</a>
                     </div>
                 </div>
-                % unless ($is_demo_user) {
-                    <a href="/shop/vendors">Vendors</a>
-                    <a href="/shop/suppliers">Suppliers</a>
-                    <a href="/shop/auditors">Auditors</a>
-                    <a href="/shop/news">News</a>
-                % }
-                <a href="/shop/trends-suggestions">Trends/Suggestions</a>
-                <a href="/about">About VGAG</a>
+                <a class="<%= $demo_muted %>" href="/shop/vendors">Vendors</a>
+                <a class="<%= $demo_muted %>" href="/shop/suppliers">Suppliers</a>
+                <a class="<%= $demo_muted %>" href="/shop/auditors">Auditors</a>
+                <a class="<%= $demo_muted %>" href="/shop/news">News</a>
+                <a class="<%= $demo_muted %>" href="/shop/trends-suggestions">Trends/Suggestions</a>
+                <a class="<%= $demo_muted %>" href="/about">About VGAG</a>
                 <a class="submenu-muted" href="/shop/delivery-shipping">Delivery/Shipping</a>
                 <a class="submenu-muted" href="/shop/sales-invoices">Sales and Invoices</a>
                 <a class="submenu-muted" href="/shop/reports-profit-loss">Reports/Profit Loss</a>
-                <a href="/shop/affiliates">Affiliates</a>
-                <a href="/shop/franchise">Franchise</a>
+                <a class="<%= $demo_muted %>" href="/shop/affiliates">Affiliates</a>
+                <a class="<%= $demo_muted %>" href="/shop/franchise">Franchise</a>
                 <div class="nav-item">
-                    <a href="/about">Info</a>
+                    <a class="<%= $demo_muted %>" href="/about">Info</a>
                     <div class="submenu">
-                        <a href="/about">About</a>
-                        <a href="/shipping">Shipping Info</a>
-                        <a href="/returns">Returns</a>
-                        <a href="/faq">FAQ</a>
-                        <a href="/contact">Contact</a>
+                        <a class="<%= $demo_muted %>" href="/about">About</a>
+                        <a class="<%= $demo_muted %>" href="/shipping">Shipping Info</a>
+                        <a class="<%= $demo_muted %>" href="/returns">Returns</a>
+                        <a class="<%= $demo_muted %>" href="/faq">FAQ</a>
+                        <a class="<%= $demo_muted %>" href="/contact">Contact</a>
                     </div>
                 </div>
                 <div class="nav-item">
-                    <a href="/shop">Lines Of Businesses</a>
+                    <a class="<%= $demo_muted %>" href="/shop">Lines Of Businesses</a>
                     <div class="submenu">
-                        <a href="/shop/padma-impex">PADMA IMPEX</a>
-                        <a href="/shop/vgag-business-solutions">VGAG BUSINESS SOLUTIONS</a>
-                        <a href="/shop/efbiwff-ngo-section8">EFBIWFF (NGO/SECTION8)</a>
-                        <a href="/shop/vgag-partner-dance-studio-all-styles">VGAG PARTNER DANCE STUDIO ALL STYLES</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/salsa">SALSA</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/salsa-rueda">SALSA RUEDA</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/casino-rueda">CASINO RUEDA</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/bachata">BACHATA</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/cumbia">CUMBIA</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/nortenos">NORTENOS</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/tango">TANGO</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/jive">JIVE</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/merengue">MERENGUE</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/rumba">RUMBA</a>
-                        <a class="submenu-child" href="/shop/vgag-partner-dance-studio-all-styles/chacha">CHACHA</a>
-                        <a href="/shop/vgag-fresh-meals-prep-kit-delivery">VGAG Fresh Meals Prep Kit Delivery</a>
-                        <a href="/shop/vgag-bike-rentals-airport-shuttles">VGAG Bike Rentals and Airport Shuttles</a>
-                        <a href="/shop/vgag-luxury-homestays">VGAG Luxury Homestays</a>
-                        <a href="/shop/vgag-expats-network">VGAG Expats Network</a>
+                        <a class="<%= $demo_muted %>" href="/shop/padma-impex">PADMA IMPEX</a>
+                        <a class="<%= $demo_muted %>" href="/shop/vgag-business-solutions">VGAG BUSINESS SOLUTIONS</a>
+                        <a class="<%= $demo_muted %>" href="/shop/efbiwff-ngo-section8">EFBIWFF (NGO/SECTION8)</a>
+                        <a class="<%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles">VGAG PARTNER DANCE STUDIO ALL STYLES</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/salsa">SALSA</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/salsa-rueda">SALSA RUEDA</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/casino-rueda">CASINO RUEDA</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/bachata">BACHATA</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/cumbia">CUMBIA</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/nortenos">NORTENOS</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/tango">TANGO</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/jive">JIVE</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/merengue">MERENGUE</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/rumba">RUMBA</a>
+                        <a class="submenu-child <%= $demo_muted %>" href="/shop/vgag-partner-dance-studio-all-styles/chacha">CHACHA</a>
+                        <a class="<%= $demo_muted %>" href="/shop/vgag-fresh-meals-prep-kit-delivery">VGAG Fresh Meals Prep Kit Delivery</a>
+                        <a class="<%= $demo_muted %>" href="/shop/vgag-bike-rentals-airport-shuttles">VGAG Bike Rentals and Airport Shuttles</a>
+                        <a class="<%= $demo_muted %>" href="/shop/vgag-luxury-homestays">VGAG Luxury Homestays</a>
+                        <a class="<%= $demo_muted %>" href="/shop/vgag-expats-network">VGAG Expats Network</a>
                     </div>
                 </div>
                 <form method="POST" action="/preferences" style="display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px; background: transparent; border: 0; max-width: none;">
@@ -481,19 +478,17 @@
             </div>
             <div>
                 <h4>Quick Links</h4>
-                % unless ($is_demo_user) {
-                    <a href="/products">Products</a>
-                % }
-                <a href="/about">About</a>
-                <a href="/contact">Contact</a>
-                <a href="/privacy-policy">Privacy Policy</a>
-                <a href="/terms-of-service">Terms of Service</a>
+                <a class="<%= $demo_muted %>" href="/products">Products</a>
+                <a class="<%= $demo_muted %>" href="/about">About</a>
+                <a class="<%= $demo_muted %>" href="/contact">Contact</a>
+                <a class="<%= $demo_muted %>" href="/privacy-policy">Privacy Policy</a>
+                <a class="<%= $demo_muted %>" href="/terms-of-service">Terms of Service</a>
             </div>
             <div>
                 <h4>Customer Service</h4>
-                <a href="/faq">FAQ</a>
-                <a href="/shipping">Shipping Info</a>
-                <a href="/returns">Returns</a>
+                <a class="<%= $demo_muted %>" href="/faq">FAQ</a>
+                <a class="<%= $demo_muted %>" href="/shipping">Shipping Info</a>
+                <a class="<%= $demo_muted %>" href="/returns">Returns</a>
             </div>
             <div>
                 <h4>Contact</h4>

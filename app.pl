@@ -550,8 +550,20 @@ hook before_dispatch => sub ($c) {
         return $c->redirect_to('/otp/verify');
     }
 
-    return if $c->session('user_id');
     return if $path =~ m{^/(css|js|images|uploads|reels)/};
+
+    if ($c->session('user_id')) {
+        my $user = $c->get_session_user;
+        if ($user && lc(($user->{username} // '')) eq 'demo') {
+            return if $path eq '/logout';
+            return if $path eq '/preferences';
+            return if $path eq '/shop/business-partners';
+            return if $path eq '/shop/sree-physio-therapists';
+            return if $path =~ m{^/shop/sree-physio-therapists/};
+            return $c->redirect_to('/shop/business-partners');
+        }
+        return;
+    }
 
     $c->redirect_to('/login');
 };
@@ -1456,7 +1468,7 @@ post '/login' => sub ($c) {
     if (lc(($user->{username} // '')) eq 'demo') {
         $c->session(user_id => $user->{id});
         $c->flash(success => 'Logged in as demo user.');
-        return $c->redirect_to('/');
+        return $c->redirect_to('/shop/business-partners');
     }
 
     my $challenge = $c->create_login_otp_challenge($user);
