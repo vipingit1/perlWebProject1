@@ -1,0 +1,42 @@
+% layout 'default';
+% title 'Verify OTP';
+% my $challenge = stash('challenge') // {};
+% my $expiry_minutes = stash('expiry_minutes') // 10;
+% my $masked_email = $challenge->{email} // '';
+% $masked_email =~ s/(^.).*(@.*$)/$1***$2/ if $masked_email =~ /@/;
+% my $masked_phone = $challenge->{phone} // '';
+% $masked_phone =~ s/.(?=.{4})/*/g if length $masked_phone > 4;
+
+<div class="container" style="margin: 60px auto; max-width: 720px;">
+    <h1>Verify OTP</h1>
+    <p style="margin: 12px 0 20px;">
+        Enter the one-time password sent to <strong><%= $masked_email || 'your email' %></strong>
+        and <strong><%= $masked_phone || 'your phone' %></strong>. The code expires in <%= $expiry_minutes %> minutes.
+    </p>
+
+    % if (stash('error')) {
+        <div class="alert alert-error"><%= stash('error') %></div>
+    % }
+
+    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; margin-bottom: 20px;">
+        <p><strong>Email delivery:</strong> <%= $challenge->{email_status} || 'pending' %></p>
+        <p style="margin-top: 8px;"><strong>SMS delivery:</strong> <%= $challenge->{sms_status} || 'pending' %></p>
+        % if (($challenge->{attempts} // 0) > 0) {
+            <p style="margin-top: 8px; color: #b45309;"><strong>Invalid attempts:</strong> <%= $challenge->{attempts} %> / 5</p>
+        % }
+    </div>
+
+    <form method="POST" action="/otp/verify">
+        <div class="form-group">
+            <label for="otp_code">OTP Code</label>
+            <input type="text" id="otp_code" name="otp_code" inputmode="numeric" maxlength="6" required>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="submit" class="btn btn-primary">Verify OTP</button>
+        </div>
+    </form>
+
+    <form method="POST" action="/otp/resend" style="margin-top: 18px;">
+        <button type="submit" class="btn btn-info">Resend OTP</button>
+    </form>
+</div>

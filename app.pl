@@ -10,6 +10,7 @@ use DateTime;
 use Mojo::UserAgent;
 use File::Path qw(make_path);
 use File::Spec;
+use Mojo::Util qw(url_escape);
 use POSIX qw(strftime);
 use Net::SMTP;
 use MIME::Base64;
@@ -313,6 +314,22 @@ sub init_db {
     });
 
     $db->do(q{
+        CREATE TABLE IF NOT EXISTS login_otp_challenges (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            otp_hash TEXT NOT NULL,
+            email_status TEXT,
+            sms_status TEXT,
+            attempts INTEGER DEFAULT 0,
+            expires_at DATETIME NOT NULL,
+            consumed_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    });
+
+    $db->do(q{
         CREATE TABLE IF NOT EXISTS slack_connection_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -350,6 +367,124 @@ helper set_setting => sub ($c, $key, $value) {
         VALUES (?, ?, CURRENT_TIMESTAMP)
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
     }, undef, $key, $value // '');
+};
+
+helper otp_settings => sub ($c) {
+    my $expiry = $c->get_setting('otp_expiry_minutes', 10);
+    $expiry = 10 unless defined $expiry && $expiry =~ /^\d+$/;
+    $expiry = 3 if $expiry < 3;
+    $expiry = 30 if $expiry > 30;
+
+    return {
+        expiry_minutes => $expiry,
+        email_subject => $c->get_setting('otp_email_subject', 'VGAG BUSINESS SUITE login OTP'),
+        sms_gateway_url_template => $c->get_setting('sms_gateway_url_template', ''),
+        sms_sender_id => $c->get_setting('sms_sender_id', ''),
+        sms_api_key => $c->get_setting('sms_api_key', ''),
+    };
+};
+
+helper send_sms => sub ($c, $phone, $message) {
+    my $config = $c->otp_settings;
+    my $template = $config->{sms_gateway_url_template} // '';
+    return { success => 0, error => 'SMS gateway URL template is not configured' } unless $template;
+
+    my %replacements = (
+        '{phone}' => url_escape($phone // ''),
+        '{message}' => url_escape($message // ''),
+        '{sender_id}' => url_escape($config->{sms_sender_id} // ''),
+        '{api_key}' => url_escape($config->{sms_api_key} // ''),
+    );
+
+    my $url = $template;
+    for my $token (keys %replacements) {
+        my $value = $replacements{$token};
+        $url =~ s/\Q$token\E/$value/g;
+    }
+
+    my $res = $c->ua->get($url)->result;
+    return { success => 1, status => 'sent_via_sms_gateway' } if $res->is_success;
+    return { success => 0, error => $res->body || $res->message || 'SMS delivery failed' };
+};
+
+helper send_login_otp_email => sub ($c, $user, $otp_code) {
+    my $subject = $c->otp_settings->{email_subject};
+    my $body = <<"EMAIL";
+Hello @{[$user->{username} // 'User']},
+
+Your VGAG BUSINESS SUITE one-time password is: $otp_code
+
+This code expires in @{[$c->otp_settings->{expiry_minutes}]} minutes.
+If you did not try to log in, please ignore this message.
+
+EMAIL
+
+    my $smtp_result = $c->send_email($user->{email}, $subject, $body);
+    return { success => 1, status => 'sent_via_smtp' } if $smtp_result->{success};
+
+    my $email_dir = File::Spec->catdir('.', 'emails');
+    make_path($email_dir) unless -d $email_dir;
+    my $file = File::Spec->catfile(
+        $email_dir,
+        sprintf('login_otp_%s_%s.txt', ($user->{username} // 'user'), strftime('%Y%m%d%H%M%S', gmtime()))
+    );
+    open my $fh, '>', $file or die "Unable to write OTP email file: $file";
+    print {$fh} "To: $user->{email}\n";
+    print {$fh} "Subject: $subject\n\n";
+    print {$fh} $body;
+    close $fh;
+    return { success => 1, status => "saved_to_$file" };
+};
+
+helper create_login_otp_challenge => sub ($c, $user) {
+    my $otp_code = sprintf('%06d', int(rand(1_000_000)));
+    my $otp_hash = sha256_hex($otp_code);
+    my $expires_at = strftime('%Y-%m-%d %H:%M:%S', gmtime(time + ($c->otp_settings->{expiry_minutes} * 60)));
+
+    my $email_result = $c->send_login_otp_email($user, $otp_code);
+    my $email_status = $email_result->{status} // ('failed: ' . ($email_result->{error} // 'unknown'));
+
+    my $sms_status = 'not_requested';
+    if ($user->{phone}) {
+        my $sms_message = "VGAG BUSINESS SUITE login OTP: $otp_code. Valid for " . $c->otp_settings->{expiry_minutes} . " minutes.";
+        my $sms_result = $c->send_sms($user->{phone}, $sms_message);
+        $sms_status = $sms_result->{success}
+            ? ($sms_result->{status} // 'sent_via_sms_gateway')
+            : ('failed: ' . ($sms_result->{error} // 'unknown'));
+    }
+    else {
+        $sms_status = 'failed: phone number missing';
+    }
+
+    $db->do(
+        q{UPDATE login_otp_challenges SET consumed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND consumed_at IS NULL},
+        undef,
+        $user->{id}
+    );
+    $db->do(q{
+        INSERT INTO login_otp_challenges (user_id, otp_hash, email_status, sms_status, expires_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    }, undef, $user->{id}, $otp_hash, $email_status, $sms_status, $expires_at);
+
+    my $challenge_id = $db->last_insert_id(undef, undef, 'login_otp_challenges', undef);
+    return {
+        challenge_id => $challenge_id,
+        email_status => $email_status,
+        sms_status => $sms_status,
+        expires_at => $expires_at,
+    };
+};
+
+helper current_login_otp_challenge => sub ($c) {
+    my $challenge_id = $c->session('pending_otp_challenge_id');
+    return unless $challenge_id;
+
+    return $db->selectrow_hashref(q{
+        SELECT loc.*, u.username, u.email, u.phone, u.full_name
+        FROM login_otp_challenges loc
+        JOIN users u ON u.id = loc.user_id
+        WHERE loc.id = ?
+    }, undef, $challenge_id);
 };
 
 helper slack_connect_config => sub ($c) {
@@ -407,6 +542,18 @@ helper partner_section_config => sub ($c, $section) {
 hook before_dispatch => sub ($c) {
     $c->session(lang => 'en') unless $c->session('lang');
     $c->session(currency => 'USD') unless $c->session('currency');
+
+    my $path = $c->req->url->path->to_string;
+    return if $path =~ m{^/(login|register|otp/verify|otp/resend|favicon\.ico)$};
+
+    if ($c->session('pending_otp_challenge_id') && !$c->session('user_id')) {
+        return $c->redirect_to('/otp/verify');
+    }
+
+    return if $c->session('user_id');
+    return if $path =~ m{^/(css|js|images|uploads|reels)/};
+
+    $c->redirect_to('/login');
 };
 
 helper languages => sub { return \%LANGUAGE_CONFIG };
@@ -1256,6 +1403,7 @@ get '/register' => sub ($c) {
 post '/register' => sub ($c) {
     my $username = $c->param('username');
     my $email = $c->param('email');
+    my $phone = $c->param('phone');
     my $password = $c->param('password');
     my $confirm = $c->param('confirm_password');
     
@@ -1267,9 +1415,9 @@ post '/register' => sub ($c) {
     
     eval {
         my $stmt = $db->prepare(
-            'INSERT INTO users (username, email, password, role, is_active) VALUES (?, ?, ?, ?, ?)'
+            'INSERT INTO users (username, email, phone, password, role, is_active) VALUES (?, ?, ?, ?, ?, ?)'
         );
-        $stmt->execute($username, $email, $hashed_pwd, 'customer', 1);
+        $stmt->execute($username, $email, $phone, $hashed_pwd, 'customer', 1);
     };
     
     if ($@) {
@@ -1290,7 +1438,7 @@ post '/login' => sub ($c) {
     my $password = $c->param('password');
     
     my $hashed_pwd = sha256_hex($password);
-    my $stmt = $db->prepare('SELECT id, is_active FROM users WHERE username = ? AND password = ?');
+    my $stmt = $db->prepare('SELECT id, username, email, phone, is_active FROM users WHERE username = ? AND password = ?');
     $stmt->execute($username, $hashed_pwd);
     my $user = $stmt->fetchrow_hashref;
     
@@ -1300,15 +1448,103 @@ post '/login' => sub ($c) {
     unless ($user->{is_active}) {
         return $c->render(template => 'login', error => 'Account disabled. Contact administrator.');
     }
-    
-    $c->session(user_id => $user->{id});
+
+    delete $c->session->{user_id};
+    my $challenge = $c->create_login_otp_challenge($user);
+    $c->session(pending_otp_challenge_id => $challenge->{challenge_id});
+    $c->session(pending_otp_user_id => $user->{id});
+    $c->flash(success => 'OTP sent. Enter the code to complete login.');
+    $c->redirect_to('/otp/verify');
+};
+
+get '/otp/verify' => sub ($c) {
+    my $challenge = $c->current_login_otp_challenge;
+    return $c->redirect_to('/login') unless $challenge;
+
+    if ($challenge->{consumed_at} || $challenge->{expires_at} le strftime('%Y-%m-%d %H:%M:%S', gmtime())) {
+        delete $c->session->{pending_otp_challenge_id};
+        delete $c->session->{pending_otp_user_id};
+        $c->flash(error => 'OTP expired. Please log in again.');
+        return $c->redirect_to('/login');
+    }
+
+    $c->render(template => 'otp_verify', challenge => $challenge, expiry_minutes => $c->otp_settings->{expiry_minutes});
+};
+
+post '/otp/verify' => sub ($c) {
+    my $challenge = $c->current_login_otp_challenge;
+    return $c->redirect_to('/login') unless $challenge;
+
+    my $otp_code = $c->param('otp_code') // '';
+    if ($challenge->{consumed_at} || $challenge->{expires_at} le strftime('%Y-%m-%d %H:%M:%S', gmtime())) {
+        delete $c->session->{pending_otp_challenge_id};
+        delete $c->session->{pending_otp_user_id};
+        $c->flash(error => 'OTP expired. Please log in again.');
+        return $c->redirect_to('/login');
+    }
+
+    my $expected_hash = sha256_hex($otp_code);
+    if ($expected_hash ne ($challenge->{otp_hash} // '')) {
+        $db->do(
+            'UPDATE login_otp_challenges SET attempts = attempts + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            undef,
+            $challenge->{id}
+        );
+        my ($attempts) = $db->selectrow_array('SELECT attempts FROM login_otp_challenges WHERE id = ?', undef, $challenge->{id});
+        if (($attempts // 0) >= 5) {
+            $db->do(
+                'UPDATE login_otp_challenges SET consumed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                undef,
+                $challenge->{id}
+            );
+            delete $c->session->{pending_otp_challenge_id};
+            delete $c->session->{pending_otp_user_id};
+            $c->flash(error => 'Too many invalid OTP attempts. Please log in again.');
+            return $c->redirect_to('/login');
+        }
+        return $c->render(template => 'otp_verify',
+            challenge => { %$challenge, attempts => $attempts },
+            expiry_minutes => $c->otp_settings->{expiry_minutes},
+            error => 'Invalid OTP code'
+        );
+    }
+
+    $db->do(
+        'UPDATE login_otp_challenges SET consumed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        undef,
+        $challenge->{id}
+    );
+
+    $c->session(user_id => $challenge->{user_id});
+    delete $c->session->{pending_otp_challenge_id};
+    delete $c->session->{pending_otp_user_id};
+    $c->flash(success => 'OTP verified successfully.');
     $c->redirect_to('/');
+};
+
+post '/otp/resend' => sub ($c) {
+    my $user_id = $c->session('pending_otp_user_id');
+    return $c->redirect_to('/login') unless $user_id;
+
+    my $user = $db->selectrow_hashref(
+        'SELECT id, username, email, phone, is_active FROM users WHERE id = ?',
+        undef,
+        $user_id
+    );
+    return $c->redirect_to('/login') unless $user && ($user->{is_active} // 1);
+
+    my $challenge = $c->create_login_otp_challenge($user);
+    $c->session(pending_otp_challenge_id => $challenge->{challenge_id});
+    $c->flash(success => 'A new OTP has been sent.');
+    $c->redirect_to('/otp/verify');
 };
 
 # Logout
 get '/logout' => sub ($c) {
     delete $c->session->{user_id};
-    $c->redirect_to('/');
+    delete $c->session->{pending_otp_challenge_id};
+    delete $c->session->{pending_otp_user_id};
+    $c->redirect_to('/login');
 };
 
 post '/preferences' => sub ($c) {
@@ -2177,6 +2413,46 @@ post '/admin/order/:id/status' => sub ($c) {
 };
 
 # Shiprocket Admin Settings
+get '/admin/otp-settings' => sub ($c) {
+    $c->require_roles(qw(admin manager)) or return;
+
+    my $config = $c->otp_settings;
+    $c->render(template => 'admin_otp_settings', config => $config);
+};
+
+post '/admin/otp-settings' => sub ($c) {
+    $c->require_roles(qw(admin manager)) or return;
+
+    my $expiry_minutes = $c->param('expiry_minutes') // 10;
+    my $email_subject = $c->param('email_subject') // '';
+    my $sms_gateway_url_template = $c->param('sms_gateway_url_template') // '';
+    my $sms_sender_id = $c->param('sms_sender_id') // '';
+    my $sms_api_key = $c->param('sms_api_key') // '';
+
+    unless ($expiry_minutes =~ /^\d+$/ && $expiry_minutes >= 3 && $expiry_minutes <= 30) {
+        $c->flash(error => 'OTP expiry must be between 3 and 30 minutes.');
+        return $c->redirect_to('/admin/otp-settings');
+    }
+
+    if ($sms_gateway_url_template) {
+        for my $required_token (qw({phone} {message})) {
+            unless (index($sms_gateway_url_template, $required_token) >= 0) {
+                $c->flash(error => 'SMS gateway URL template must include {phone} and {message}.');
+                return $c->redirect_to('/admin/otp-settings');
+            }
+        }
+    }
+
+    $c->set_setting('otp_expiry_minutes', $expiry_minutes);
+    $c->set_setting('otp_email_subject', $email_subject || 'VGAG BUSINESS SUITE login OTP');
+    $c->set_setting('sms_gateway_url_template', $sms_gateway_url_template);
+    $c->set_setting('sms_sender_id', $sms_sender_id);
+    $c->set_setting('sms_api_key', $sms_api_key);
+
+    $c->flash(success => 'OTP settings saved.');
+    $c->redirect_to('/admin/otp-settings');
+};
+
 get '/admin/shiprocket' => sub ($c) {
     $c->require_roles(qw(admin manager)) or return;
     

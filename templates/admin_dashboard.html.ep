@@ -29,6 +29,7 @@
         <a href="/admin/reports" class="btn btn-primary">GST & Sales Reports</a>
         <a href="/admin/reels" class="btn btn-info">Meta Reels Automation</a>
         <a href="/admin/shiprocket" class="btn btn-success">Shiprocket Shipping</a>
+        <a href="/admin/otp-settings" class="btn btn-primary">OTP & SMS Settings</a>
         <a href="/admin/slack" class="btn btn-info">Manage Slack Connect</a>
         <a href="/admin/users" class="btn btn-primary">Manage Users & Access</a>
     </div>

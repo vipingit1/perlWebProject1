@@ -3,6 +3,7 @@
 
 <div class="container" style="margin: 60px auto;">
     <h1>Login</h1>
+    <p style="margin: 12px 0 20px;">After password login, an OTP will be sent to your email and SMS to complete access.</p>
     
     % if (my $error = param('error')) {
         <div class="alert alert-error"><%= $error %></div>

@@ -1,0 +1,40 @@
+% layout 'default';
+% title 'OTP Settings';
+% my $config = stash('config') // {};
+
+<div class="container" style="margin: 60px auto; max-width: 920px;">
+    <h1>OTP & SMS Settings</h1>
+    <p style="margin: 12px 0 20px;">
+        All website pages now require login. After password login, users must verify with OTP delivered by email and SMS.
+    </p>
+
+    <form method="POST" action="/admin/otp-settings" style="max-width: none;">
+        <div class="form-group">
+            <label for="expiry_minutes">OTP Expiry Minutes</label>
+            <input type="number" id="expiry_minutes" name="expiry_minutes" min="3" max="30" value="<%= $config->{expiry_minutes} // 10 %>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email_subject">OTP Email Subject</label>
+            <input type="text" id="email_subject" name="email_subject" value="<%= $config->{email_subject} || '' %>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="sms_gateway_url_template">SMS Gateway URL Template</label>
+            <textarea id="sms_gateway_url_template" name="sms_gateway_url_template" placeholder="https://provider.example/send?to={phone}&message={message}&sender={sender_id}&key={api_key}"><%= $config->{sms_gateway_url_template} || '' %></textarea>
+            <small>Required tokens: <code>{phone}</code> and <code>{message}</code>. Optional tokens: <code>{sender_id}</code>, <code>{api_key}</code>.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="sms_sender_id">SMS Sender ID</label>
+            <input type="text" id="sms_sender_id" name="sms_sender_id" value="<%= $config->{sms_sender_id} || '' %>">
+        </div>
+
+        <div class="form-group">
+            <label for="sms_api_key">SMS API Key</label>
+            <input type="text" id="sms_api_key" name="sms_api_key" value="<%= $config->{sms_api_key} || '' %>">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save OTP Settings</button>
+    </form>
+</div>
