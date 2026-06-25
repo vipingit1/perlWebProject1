@@ -21,6 +21,9 @@
     <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; margin-bottom: 20px;">
         <p><strong>Email delivery:</strong> <%= $challenge->{email_status} || 'pending' %></p>
         <p style="margin-top: 8px;"><strong>SMS delivery:</strong> <%= $challenge->{sms_status} || 'pending' %></p>
+        % if (($challenge->{sms_status} // '') eq 'not configured by admin') {
+            <p style="margin-top: 8px; color: #666;">SMS OTP is optional until an SMS gateway is configured in admin settings.</p>
+        % }
         <p style="margin-top: 8px; color: #666;">A backup OTP copy is also written under the server <code>emails/</code> folder.</p>
         % if (($challenge->{attempts} // 0) > 0) {
             <p style="margin-top: 8px; color: #b45309;"><strong>Invalid attempts:</strong> <%= $challenge->{attempts} %> / 5</p>

@@ -387,7 +387,7 @@ helper otp_settings => sub ($c) {
 helper send_sms => sub ($c, $phone, $message) {
     my $config = $c->otp_settings;
     my $template = $config->{sms_gateway_url_template} // '';
-    return { success => 0, error => 'SMS gateway URL template is not configured' } unless $template;
+    return { success => 0, configured => 0, status => 'not configured by admin' } unless $template;
 
     my %replacements = (
         '{phone}' => url_escape($phone // ''),
@@ -449,12 +449,11 @@ helper create_login_otp_challenge => sub ($c, $user) {
     if ($user->{phone}) {
         my $sms_message = "VGAG BUSINESS SUITE login OTP: $otp_code. Valid for " . $c->otp_settings->{expiry_minutes} . " minutes.";
         my $sms_result = $c->send_sms($user->{phone}, $sms_message);
-        $sms_status = $sms_result->{success}
-            ? ($sms_result->{status} // 'sent_via_sms_gateway')
-            : ('failed: ' . ($sms_result->{error} // 'unknown'));
+        $sms_status = $sms_result->{status}
+            // ($sms_result->{success} ? 'sent_via_sms_gateway' : 'delivery unavailable');
     }
     else {
-        $sms_status = 'failed: phone number missing';
+        $sms_status = 'phone number missing';
     }
 
     $db->do(
