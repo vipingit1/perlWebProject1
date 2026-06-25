@@ -314,6 +314,18 @@ sub init_db {
     });
 
     $db->do(q{
+        CREATE TABLE IF NOT EXISTS partner_submission_files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            submission_id INTEGER NOT NULL,
+            file_path TEXT NOT NULL,
+            original_filename TEXT NOT NULL,
+            content_type TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(submission_id) REFERENCES partner_page_submissions(id) ON DELETE CASCADE
+        )
+    });
+
+    $db->do(q{
         CREATE TABLE IF NOT EXISTS login_otp_challenges (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -1075,7 +1087,7 @@ get '/shop/sree-physio-therapists/:section' => sub ($c) {
             submit_url => "/shop/sree-physio-therapists/$section/submit",
             section_key => $section,
             partner_key => 'sree-physio-therapists',
-            upload_label => $selected->{upload_label} // 'Upload Files',
+            upload_label => $selected->{upload_label} // 'Upload Photos, Videos, or Files',
             upload_accept => $selected->{upload_accept} // '',
         }
     );
@@ -1101,24 +1113,30 @@ post '/shop/sree-physio-therapists/:section/submit' => sub ($c) {
         return $c->redirect_to("/shop/sree-physio-therapists/$section");
     }
 
-    my $stored_relative_path = '';
-    my $original_filename = '';
-    if (my $upload = $c->req->upload('attachment')) {
-        $original_filename = $upload->filename // '';
-        if ($original_filename) {
-            if (($section eq 'videos') && (($upload->headers->content_type // '') !~ m{^video/}i) && ($original_filename !~ /\.(mp4|mov|avi|mkv|webm)$/i)) {
-                $c->flash(error => 'Please upload a valid video file.');
-                return $c->redirect_to("/shop/sree-physio-therapists/$section");
-            }
-            my $safe_name = $original_filename;
-            $safe_name =~ s{[^A-Za-z0-9._-]}{_}g;
-            my $upload_dir = File::Spec->catdir('.', 'public', 'uploads', 'sree-physio-therapists', $section);
-            make_path($upload_dir) unless -d $upload_dir;
-            my $stored_name = time . '-' . $safe_name;
-            my $target = File::Spec->catfile($upload_dir, $stored_name);
-            $upload->move_to($target);
-            $stored_relative_path = '/uploads/sree-physio-therapists/' . $section . '/' . $stored_name;
+    my @stored_files;
+    my $upload_dir = File::Spec->catdir('.', 'public', 'uploads', 'sree-physio-therapists', $section);
+    my @uploads = @{ $c->req->every_upload('attachment') // [] };
+    for my $upload (@uploads) {
+        next unless $upload;
+        my $original_filename = $upload->filename // '';
+        next unless $original_filename;
+
+        if (($section eq 'videos') && (($upload->headers->content_type // '') !~ m{^video/}i) && ($original_filename !~ /\.(mp4|mov|avi|mkv|webm)$/i)) {
+            $c->flash(error => 'Please upload only valid video files on the Videos page.');
+            return $c->redirect_to("/shop/sree-physio-therapists/$section");
         }
+
+        my $safe_name = $original_filename;
+        $safe_name =~ s{[^A-Za-z0-9._-]}{_}g;
+        make_path($upload_dir) unless -d $upload_dir;
+        my $stored_name = time . '-' . int(rand(100000)) . '-' . $safe_name;
+        my $target = File::Spec->catfile($upload_dir, $stored_name);
+        $upload->move_to($target);
+        push @stored_files, {
+            file_path => '/uploads/sree-physio-therapists/' . $section . '/' . $stored_name,
+            original_filename => $original_filename,
+            content_type => ($upload->headers->content_type // ''),
+        };
     }
 
     $db->do(q{
@@ -1139,11 +1157,29 @@ post '/shop/sree-physio-therapists/:section/submit' => sub ($c) {
         $timeline,
         $budget,
         $details,
-        $stored_relative_path,
-        $original_filename
+        ($stored_files[0] ? $stored_files[0]{file_path} : ''),
+        ($stored_files[0] ? $stored_files[0]{original_filename} : '')
     );
 
-    $c->flash(success => 'Your details and files were submitted successfully.');
+    my $submission_id = $db->last_insert_id(undef, undef, 'partner_page_submissions', undef);
+    for my $stored_file (@stored_files) {
+        $db->do(q{
+            INSERT INTO partner_submission_files (
+                submission_id, file_path, original_filename, content_type
+            ) VALUES (?, ?, ?, ?)
+        }, undef,
+            $submission_id,
+            $stored_file->{file_path},
+            $stored_file->{original_filename},
+            $stored_file->{content_type}
+        );
+    }
+
+    my $file_count = scalar @stored_files;
+    my $message = $file_count
+        ? "Your details and $file_count file(s) were submitted successfully."
+        : 'Your details were submitted successfully.';
+    $c->flash(success => $message);
     $c->redirect_to("/shop/sree-physio-therapists/$section");
 };
 

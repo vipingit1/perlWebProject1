@@ -2,6 +2,9 @@
 % title $section_name;
 % my $section_products = stash('section_products') // [];
 % my $detail_form = stash('detail_form');
+% my $dropzone_id = ($detail_form->{section_key} // 'upload') . '-dropzone';
+% my $file_input_id = ($detail_form->{section_key} // 'upload') . '-attachment';
+% my $file_list_id = ($detail_form->{section_key} // 'upload') . '-file-list';
 
 <div class="container" style="margin: 60px auto;">
     <h1><%= $section_name %></h1>
@@ -77,8 +80,14 @@
                 </div>
 
                 <div class="form-group">
-                <label for="attachment"><%= $detail_form->{upload_label} // 'Upload Files' %></label>
-                <input id="attachment" name="attachment" type="file" accept="<%= $detail_form->{upload_accept} // '' %>">
+                    <label for="<%= $file_input_id %>"><%= $detail_form->{upload_label} // 'Upload Files' %></label>
+                    <div id="<%= $dropzone_id %>" style="border: 2px dashed #667eea; border-radius: 10px; padding: 24px; background: #f8faff; text-align: center; cursor: pointer;">
+                        <strong>Drag and drop files here</strong>
+                        <p style="margin-top: 8px; color: #666;">You can upload multiple photos, videos, or files at once.</p>
+                        <button type="button" class="btn btn-info" style="margin-top: 10px;">Choose Files</button>
+                    </div>
+                    <input id="<%= $file_input_id %>" name="attachment" type="file" accept="<%= $detail_form->{upload_accept} // '' %>" multiple style="display: none;">
+                    <div id="<%= $file_list_id %>" style="margin-top: 12px; color: #555;">No files selected yet.</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Submit Details</button>
@@ -90,3 +99,56 @@
         <a href="/shop" class="btn btn-info">Back to Lines Of Businesses</a>
     </div>
 </div>
+
+% if ($detail_form) {
+    <script>
+        (function () {
+            var dropzone = document.getElementById('<%= $dropzone_id %>');
+            var input = document.getElementById('<%= $file_input_id %>');
+            var fileList = document.getElementById('<%= $file_list_id %>');
+            if (!dropzone || !input || !fileList) return;
+
+            function renderFileList(files) {
+                if (!files || !files.length) {
+                    fileList.textContent = 'No files selected yet.';
+                    return;
+                }
+                var names = Array.prototype.map.call(files, function (file) {
+                    var sizeKb = Math.max(1, Math.round(file.size / 1024));
+                    return file.name + ' (' + sizeKb + ' KB)';
+                });
+                fileList.innerHTML = '<strong>' + files.length + ' file(s) selected:</strong><br>' + names.join('<br>');
+            }
+
+            dropzone.addEventListener('click', function () {
+                input.click();
+            });
+
+            input.addEventListener('change', function () {
+                renderFileList(input.files);
+            });
+
+            ['dragenter', 'dragover'].forEach(function (eventName) {
+                dropzone.addEventListener(eventName, function (event) {
+                    event.preventDefault();
+                    dropzone.style.background = '#eef4ff';
+                    dropzone.style.borderColor = '#4f46e5';
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(function (eventName) {
+                dropzone.addEventListener(eventName, function (event) {
+                    event.preventDefault();
+                    dropzone.style.background = '#f8faff';
+                    dropzone.style.borderColor = '#667eea';
+                });
+            });
+
+            dropzone.addEventListener('drop', function (event) {
+                if (!event.dataTransfer || !event.dataTransfer.files) return;
+                input.files = event.dataTransfer.files;
+                renderFileList(input.files);
+            });
+        })();
+    </script>
+% }
