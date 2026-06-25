@@ -737,6 +737,27 @@ get '/shop' => sub ($c) {
     $c->render(template => 'shop');
 };
 
+get '/shop/padma-impex' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'PADMA IMPEX',
+        section_description => 'Explore trade, sourcing, and product opportunities under PADMA IMPEX.'
+    );
+};
+
+get '/shop/vgag-business-solutions' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'VGAG BUSINESS SOLUTIONS',
+        section_description => 'Discover consulting, execution, and enterprise support services from VGAG BUSINESS SOLUTIONS.'
+    );
+};
+
+get '/shop/efbiwff-ngo-section8' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'EFBIWFF (NGO/SECTION8)',
+        section_description => 'Learn about EFBIWFF social impact programs, partnerships, and NGO/SECTION8 initiatives.'
+    );
+};
+
 get '/shop/vgag-fresh-meals-prep-kit-delivery' => sub ($c) {
     $c->render(template => 'shop_section',
         section_name => 'VGAG Fresh Meals Prep Kit Delivery',

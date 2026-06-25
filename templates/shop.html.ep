@@ -6,6 +6,9 @@
     <p style="margin-top: 10px;">Select a section to continue.</p>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 30px;">
+        <a href="/shop/padma-impex" class="btn btn-primary" style="text-align: center; padding: 20px;">PADMA IMPEX</a>
+        <a href="/shop/vgag-business-solutions" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG BUSINESS SOLUTIONS</a>
+        <a href="/shop/efbiwff-ngo-section8" class="btn btn-primary" style="text-align: center; padding: 20px;">EFBIWFF (NGO/SECTION8)</a>
         <a href="/shop/vgag-fresh-meals-prep-kit-delivery" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Fresh Meals Prep Kit Delivery</a>
         <a href="/shop/vgag-bike-rentals-airport-shuttles" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Bike Rentals and Airport Shuttles</a>
         <a href="/shop/vgag-luxury-homestays" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Luxury Homestays</a>
