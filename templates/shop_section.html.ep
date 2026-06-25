@@ -2,6 +2,7 @@
 % title $section_name;
 % my $section_products = stash('section_products') // [];
 % my $detail_form = stash('detail_form');
+% my $is_website_demo = $detail_form && (($detail_form->{section_key} // '') eq 'website-demo');
 % my $dropzone_id = ($detail_form->{section_key} // 'upload') . '-dropzone';
 % my $file_input_id = ($detail_form->{section_key} // 'upload') . '-attachment';
 % my $file_list_id = ($detail_form->{section_key} // 'upload') . '-file-list';
@@ -9,6 +10,86 @@
 <div class="container" style="margin: 60px auto;">
     <h1><%= $section_name %></h1>
     <p style="margin-top: 12px;"><%= $section_description %></p>
+
+    % if ($is_website_demo) {
+        <div style="margin-top: 28px; border-radius: 16px; overflow: hidden; border: 1px solid #dbeafe; background: linear-gradient(120deg, #0f172a, #1e3a8a); color: #fff; padding: 36px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; align-items: center;">
+                <div>
+                    <p style="opacity: 0.9; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.9rem;">Sree Physio Therapists</p>
+                    <h2 style="margin-top: 10px; font-size: 2rem; line-height: 1.2; color: #fff;">Move Better. Heal Faster. Live Stronger.</h2>
+                    <p style="margin-top: 12px; color: #dbeafe;">A custom physiotherapy website demo with modern sections for therapies, specialists, patient stories, and online bookings.</p>
+                    <div style="display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap;">
+                        <a href="#website-demo-services" class="btn" style="background: #38bdf8; color: #0f172a;">Explore Services</a>
+                        <a href="#website-demo-booking" class="btn" style="background: #22c55e; color: #052e16;">Book Consultation</a>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 20px;">
+                    <h3 style="margin: 0; color: #fff;">Clinic Highlights</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 12px; margin-top: 14px;">
+                        <div style="background: rgba(15,23,42,0.55); border-radius: 8px; padding: 12px;">
+                            <strong style="font-size: 1.2rem;">12+</strong>
+                            <div style="font-size: 0.9rem; color: #bfdbfe;">Years Experience</div>
+                        </div>
+                        <div style="background: rgba(15,23,42,0.55); border-radius: 8px; padding: 12px;">
+                            <strong style="font-size: 1.2rem;">5K+</strong>
+                            <div style="font-size: 0.9rem; color: #bfdbfe;">Patients Treated</div>
+                        </div>
+                        <div style="background: rgba(15,23,42,0.55); border-radius: 8px; padding: 12px;">
+                            <strong style="font-size: 1.2rem;">98%</strong>
+                            <div style="font-size: 0.9rem; color: #bfdbfe;">Recovery Satisfaction</div>
+                        </div>
+                        <div style="background: rgba(15,23,42,0.55); border-radius: 8px; padding: 12px;">
+                            <strong style="font-size: 1.2rem;">24x7</strong>
+                            <div style="font-size: 0.9rem; color: #bfdbfe;">Support Availability</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="website-demo-services" style="margin-top: 28px;">
+            <h2>Popular Treatment Programs</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 14px;">
+                <div style="border: 1px solid #dbeafe; border-radius: 10px; padding: 16px; background: #f8fbff;">
+                    <h3 style="margin: 0;">Sports Injury Rehab</h3>
+                    <p style="margin-top: 8px; color: #555;">Strength, mobility, and return-to-play protocols with progress tracking.</p>
+                </div>
+                <div style="border: 1px solid #dbeafe; border-radius: 10px; padding: 16px; background: #f8fbff;">
+                    <h3 style="margin: 0;">Spine & Posture Care</h3>
+                    <p style="margin-top: 8px; color: #555;">Neck, shoulder, and lower-back therapy plans for office and lifestyle pain.</p>
+                </div>
+                <div style="border: 1px solid #dbeafe; border-radius: 10px; padding: 16px; background: #f8fbff;">
+                    <h3 style="margin: 0;">Post-Surgery Recovery</h3>
+                    <p style="margin-top: 8px; color: #555;">Step-based rehabilitation with therapist supervision and home exercises.</p>
+                </div>
+                <div style="border: 1px solid #dbeafe; border-radius: 10px; padding: 16px; background: #f8fbff;">
+                    <h3 style="margin: 0;">Women's Wellness Physio</h3>
+                    <p style="margin-top: 8px; color: #555;">Specialized care programs for prenatal, postnatal, and pelvic health.</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; background: #fff;">
+                <h3>Patient Testimonials</h3>
+                <p style="margin-top: 10px; color: #555;">“After 6 sessions my shoulder pain reduced drastically. The exercise plan was simple and effective.”</p>
+                <p style="margin-top: 8px; color: #2563eb;"><strong>— R. Meena</strong></p>
+            </div>
+            <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; background: #fff;">
+                <h3>Therapist Team Snapshot</h3>
+                <ul style="margin-top: 10px; padding-left: 18px; color: #555;">
+                    <li>Ortho & Sports Rehab Specialists</li>
+                    <li>Neurological Rehabilitation Experts</li>
+                    <li>Manual Therapy Certified Team</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="website-demo-booking" style="margin-top: 28px; border-radius: 12px; border: 1px solid #bbf7d0; background: #f0fdf4; padding: 20px;">
+            <h2 style="margin: 0;">Quick Booking Call-To-Action</h2>
+            <p style="margin-top: 8px; color: #166534;">Show this block in production with WhatsApp click-to-chat, call now, and appointment form links.</p>
+        </div>
+    % }
 
     % if (@$section_products) {
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 30px;">
@@ -24,7 +105,7 @@
                 </div>
             % }
         </div>
-    % } else {
+    % } elsif (!$is_website_demo) {
         <p style="margin-top: 24px;">No products available in this section yet.</p>
     % }
 
