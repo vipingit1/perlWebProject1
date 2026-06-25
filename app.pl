@@ -419,9 +419,6 @@ If you did not try to log in, please ignore this message.
 
 EMAIL
 
-    my $smtp_result = $c->send_email($user->{email}, $subject, $body);
-    return { success => 1, status => 'sent_via_smtp' } if $smtp_result->{success};
-
     my $email_dir = File::Spec->catdir('.', 'emails');
     make_path($email_dir) unless -d $email_dir;
     my $file = File::Spec->catfile(
@@ -433,7 +430,11 @@ EMAIL
     print {$fh} "Subject: $subject\n\n";
     print {$fh} $body;
     close $fh;
-    return { success => 1, status => "saved_to_$file" };
+
+    my $smtp_result = $c->send_email($user->{email}, $subject, $body);
+    return { success => 1, status => "sent_via_smtp; backup_saved:$file" } if $smtp_result->{success};
+
+    return { success => 1, status => "smtp_failed_backup_saved:$file" };
 };
 
 helper create_login_otp_challenge => sub ($c, $user) {
