@@ -1486,7 +1486,7 @@ post '/login' => sub ($c) {
     my $password = $c->param('password');
     
     my $hashed_pwd = sha256_hex($password);
-    my $stmt = $db->prepare('SELECT id, username, email, phone, is_active FROM users WHERE username = ? AND password = ?');
+    my $stmt = $db->prepare('SELECT id, username, email, phone, is_active, is_admin, role FROM users WHERE username = ? AND password = ?');
     $stmt->execute($username, $hashed_pwd);
     my $user = $stmt->fetchrow_hashref;
     
@@ -1505,6 +1505,12 @@ post '/login' => sub ($c) {
         $c->session(user_id => $user->{id});
         $c->flash(success => 'Logged in as demo user.');
         return $c->redirect_to('/shop/business-partners');
+    }
+
+    if (($user->{is_admin} // 0) || $c->normalize_role($user->{role}) eq 'admin') {
+        $c->session(user_id => $user->{id});
+        $c->flash(success => 'Logged in as admin user.');
+        return $c->redirect_to('/admin');
     }
 
     my $challenge = $c->create_login_otp_challenge($user);
@@ -2378,6 +2384,47 @@ get '/admin/orders' => sub ($c) {
     }
     
     $c->render(template => 'admin_orders', orders => \@orders);
+};
+
+get '/admin/partner-uploads' => sub ($c) {
+    $c->require_roles(qw(admin manager support)) or return;
+
+    my @submissions = @{ $db->selectall_arrayref(q{
+        SELECT *
+        FROM partner_page_submissions
+        ORDER BY created_at DESC, id DESC
+        LIMIT 200
+    }, { Slice => {} }) };
+
+    my %files_by_submission;
+    if (@submissions) {
+        my $placeholders = join(', ', ('?') x @submissions);
+        my @ids = map { $_->{id} } @submissions;
+        my @files = @{ $db->selectall_arrayref(qq{
+            SELECT submission_id, file_path, original_filename, content_type, created_at
+            FROM partner_submission_files
+            WHERE submission_id IN ($placeholders)
+            ORDER BY id ASC
+        }, { Slice => {} }, @ids) };
+
+        for my $file (@files) {
+            push @{ $files_by_submission{$file->{submission_id}} }, $file;
+        }
+    }
+
+    for my $submission (@submissions) {
+        $submission->{files} = $files_by_submission{$submission->{id}} // [];
+        if (!@{ $submission->{files} } && ($submission->{file_path} || $submission->{original_filename})) {
+            $submission->{files} = [{
+                file_path => ($submission->{file_path} // ''),
+                original_filename => ($submission->{original_filename} // ''),
+                content_type => '',
+                created_at => $submission->{created_at},
+            }];
+        }
+    }
+
+    $c->render(template => 'admin_partner_uploads', submissions => \@submissions);
 };
 
 # Sales and GST reports
