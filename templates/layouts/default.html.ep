@@ -35,13 +35,15 @@
         nav .container {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         nav a {
             color: white;
             text-decoration: none;
-            margin: 0 15px;
+            margin: 0 8px;
             transition: color 0.3s;
         }
 
@@ -143,7 +145,18 @@
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .nav-auth {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
         }
 
         /* Buttons */
@@ -333,6 +346,19 @@
                 % unless ($is_demo_user) {
                     <a href="/products"><%= $c->t('products') %></a>
                 % }
+                <div class="nav-auth">
+                    % if (session('user_id')) {
+                        <a href="/slack/connect">Slack Connect</a>
+                        <a href="/cart"><%= $c->t('cart') %></a>
+                        % if ($can_access_admin) {
+                            <a href="/admin">Admin</a>
+                        % }
+                        <a href="/logout"><%= $c->t('logout') %></a>
+                    % } else {
+                        <a href="/login"><%= $c->t('login') %></a>
+                        <a href="/register"><%= $c->t('register') %></a>
+                    % }
+                </div>
                 <div class="nav-item">
                     <a href="/shop/business-partners">Business Partners</a>
                     <div class="submenu">
@@ -412,17 +438,6 @@
                         <a href="/shop/vgag-expats-network">VGAG Expats Network</a>
                     </div>
                 </div>
-                % if (session('user_id')) {
-                    <a href="/slack/connect">Slack Connect</a>
-                    <a href="/cart"><%= $c->t('cart') %></a>
-                    % if ($can_access_admin) {
-                        <a href="/admin">Admin</a>
-                    % }
-                    <a href="/logout"><%= $c->t('logout') %></a>
-                % } else {
-                    <a href="/login"><%= $c->t('login') %></a>
-                    <a href="/register"><%= $c->t('register') %></a>
-                % }
                 <form method="POST" action="/preferences" style="display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px; background: transparent; border: 0; max-width: none;">
                     <input type="hidden" name="return_to" value="<%= $current_path %>">
                     <label for="lang-select" style="color: #fff; margin: 0;"><%= $c->t('language') %></label>
