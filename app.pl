@@ -2664,4 +2664,5 @@ get '/order/:id/track' => sub ($c) {
 };
 
 app->secrets(['vgag-business-suite-secret-key']);
+app->max_request_size(104857600);
 app->start;
