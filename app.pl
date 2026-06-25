@@ -737,32 +737,31 @@ get '/shop' => sub ($c) {
     $c->render(template => 'shop');
 };
 
-get '/shop/padma-impex' => sub ($c) {
-    my @products;
-    my $stmt = $db->prepare('SELECT * FROM products WHERE category = ? ORDER BY id DESC');
-    $stmt->execute('Padma Impex');
-    while (my $row = $stmt->fetchrow_hashref) {
-        push @products, $row;
-    }
-
+get '/shop/vgag-fresh-meals-prep-kit-delivery' => sub ($c) {
     $c->render(template => 'shop_section',
-        section_name => 'Padma Impex',
-        section_description => 'Explore premium export and sourcing offerings curated under Padma Impex.',
-        section_products => \@products
+        section_name => 'VGAG Fresh Meals Prep Kit Delivery',
+        section_description => 'Explore convenient, chef-curated fresh meal prep kits delivered to your doorstep.'
     );
 };
 
-get '/shop/ngo-section8' => sub ($c) {
+get '/shop/vgag-bike-rentals-airport-shuttles' => sub ($c) {
     $c->render(template => 'shop_section',
-        section_name => 'NGO Section8',
-        section_description => 'Discover social-impact initiatives, collaborations, and Section 8 focused programs.'
+        section_name => 'VGAG Bike Rentals and Airport Shuttles',
+        section_description => 'Book reliable bike rentals and airport shuttle services for smooth local travel.'
     );
 };
 
-get '/shop/vgag-business-solutions' => sub ($c) {
+get '/shop/vgag-luxury-homestays' => sub ($c) {
     $c->render(template => 'shop_section',
-        section_name => 'VGAG Business Solutions',
-        section_description => 'Browse business services, consulting support, and operational solution packages.'
+        section_name => 'VGAG Luxury Homestays',
+        section_description => 'Discover premium homestay experiences with comfort-focused stays in curated locations.'
+    );
+};
+
+get '/shop/vgag-expats-network' => sub ($c) {
+    $c->render(template => 'shop_section',
+        section_name => 'VGAG Expats Network',
+        section_description => 'Connect with a trusted expat community for relocation support, networking, and resources.'
     );
 };
 

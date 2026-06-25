@@ -1,13 +1,14 @@
 % layout 'default';
-% title 'Shop';
+% title 'Lines Of Businesses';
 
 <div class="container" style="margin: 60px auto;">
-    <h1>Shop</h1>
+    <h1>Lines Of Businesses</h1>
     <p style="margin-top: 10px;">Select a section to continue.</p>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 30px;">
-        <a href="/shop/padma-impex" class="btn btn-primary" style="text-align: center; padding: 20px;">Padma Impex</a>
-        <a href="/shop/ngo-section8" class="btn btn-primary" style="text-align: center; padding: 20px;">NGO Section8</a>
-        <a href="/shop/vgag-business-solutions" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Business Solutions</a>
+        <a href="/shop/vgag-fresh-meals-prep-kit-delivery" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Fresh Meals Prep Kit Delivery</a>
+        <a href="/shop/vgag-bike-rentals-airport-shuttles" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Bike Rentals and Airport Shuttles</a>
+        <a href="/shop/vgag-luxury-homestays" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Luxury Homestays</a>
+        <a href="/shop/vgag-expats-network" class="btn btn-primary" style="text-align: center; padding: 20px;">VGAG Expats Network</a>
     </div>
 </div>

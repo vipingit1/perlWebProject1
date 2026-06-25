@@ -288,11 +288,12 @@
                     </div>
                 </div>
                 <div class="nav-item">
-                    <a href="/shop">Shop</a>
+                    <a href="/shop">Lines Of Businesses</a>
                     <div class="submenu">
-                        <a href="/shop/padma-impex">Padma Impex</a>
-                        <a href="/shop/ngo-section8">NGO Section8</a>
-                        <a href="/shop/vgag-business-solutions">VGAG Business Solutions</a>
+                        <a href="/shop/vgag-fresh-meals-prep-kit-delivery">VGAG Fresh Meals Prep Kit Delivery</a>
+                        <a href="/shop/vgag-bike-rentals-airport-shuttles">VGAG Bike Rentals and Airport Shuttles</a>
+                        <a href="/shop/vgag-luxury-homestays">VGAG Luxury Homestays</a>
+                        <a href="/shop/vgag-expats-network">VGAG Expats Network</a>
                     </div>
                 </div>
                 % if (session('user_id')) {
